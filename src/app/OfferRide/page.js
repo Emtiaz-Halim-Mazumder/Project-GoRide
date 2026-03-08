@@ -53,8 +53,8 @@ export default function GoRidePage() {
       });
 
       const data = await response.json();
-
-      if (!response.ok) {
+      console.log('Response from server:', data);
+      if (!data.success) {
         throw new Error(data.message || 'Failed to create ride');
       }
 
