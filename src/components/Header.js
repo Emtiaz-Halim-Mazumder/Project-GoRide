@@ -32,6 +32,12 @@ export default function Header() {
             </button>
           </Link>
 
+          <Link href="/ClassSchedule">
+            <button className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition">
+              Class Schedule
+            </button>
+          </Link>
+
           <Link href="/Dashboard">
             <button className="border-2 border-green-600 text-green-600 hover:bg-green-50 font-medium py-2 px-4 rounded-lg transition">
               Dashboard

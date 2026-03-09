@@ -232,8 +232,8 @@ export default function GoRidePage() {
         {/* Footer navigation (Home, Class Schedule, Contact Us) */}
         <div className="border-t border-gray-200 bg-gray-50 py-3 px-6">
           <div className="flex justify-center space-x-8 text-gray-700 font-medium">
-            <span className="cursor-pointer hover:text-green-600">Home</span>
-            <span className="cursor-pointer hover:text-green-600">Class Schedule</span>
+            <Link href="/OfferRide" className="cursor-pointer hover:text-green-600">Home</Link>
+            <Link href="/ClassSchedule" className="cursor-pointer hover:text-green-600">Class Schedule</Link>
             <span className="cursor-pointer hover:text-green-600">Contact Us</span>
           </div>
       </div>
