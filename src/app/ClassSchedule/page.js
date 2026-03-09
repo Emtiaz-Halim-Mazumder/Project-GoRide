@@ -58,6 +58,8 @@ export default function ClassSchedulePage() {
       });
 
       const data = await response.json();
+      console.log('Schedule response:', data);
+      
       if (data.success) {
         setMessage('Schedule posted successfully!');
         fetchSchedules();
@@ -75,6 +77,7 @@ export default function ClassSchedulePage() {
         throw new Error(data.message || 'Failed to post schedule');
       }
     } catch (error) {
+      console.error('Schedule submission error:', error);
       setMessage(`Error: ${error.message}`);
     } finally {
       setLoading(false);
