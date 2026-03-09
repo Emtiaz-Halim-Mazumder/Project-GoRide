@@ -1,18 +1,40 @@
 import { NextResponse } from "next/server";
-import Tesseract from "tesseract.js";
+import connectDB from "@/lib/mongodb";
+import Verification from "@/models/Verification";
 
 export async function POST(req) {
+  try {
+    await connectDB();
 
-  const data = await req.formData();
-  const file = data.get("idcard");
+    const data = await req.formData();
+    const name = data.get("name");
+    const email = data.get("email");
+    const file = data.get("idcard");
 
-  const buffer = Buffer.from(await file.arrayBuffer());
+    if (!name || !email || !file) {
+      return NextResponse.json(
+        { success: false, error: "Missing required fields" },
+        { status: 400 }
+      );
+    }
 
-  const result = await Tesseract.recognize(buffer, "eng");
+    // Save verification data to database
+    const verification = await Verification.create({
+      name,
+      email,
+      idCard: file.name, // Store the filename
+      status: "pending",
+    });
 
-  const text = result.data.text;
-
-  return NextResponse.json({
-    extractedText: text
-  });
+    return NextResponse.json(
+      { success: true, message: "Verification submitted successfully", data: verification },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Verification error:", error);
+    return NextResponse.json(
+      { success: false, error: error.message },
+      { status: 500 }
+    );
+  }
 }

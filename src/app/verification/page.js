@@ -1,25 +1,44 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 
 export default function Verify() {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [file, setFile] = useState(null);
   const [isVerifying, setIsVerifying] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const upload = async () => {
+    if (!name || !email || !file) {
+      alert("Please fill in all fields");
+      return;
+    }
+
     setIsVerifying(true);
 
     const formData = new FormData();
+    formData.append("name", name);
+    formData.append("email", email);
     formData.append("idcard", file);
 
-    const response = await fetch("/api/verification", {
-      method: "POST",
-      body: formData,
-    });
+    try {
+      const response = await fetch("/api/verification", {
+        method: "POST",
+        body: formData,
+      });
 
-    if (response.ok) {
-      setIsVerified(true);
+      if (response.ok) {
+        alert("Verified Successfully");
+        setIsVerified(true);
+      }
+    } catch (error) {
+      alert("Verification failed. Please try again.");
     }
 
     setIsVerifying(false);
@@ -58,6 +77,34 @@ export default function Verify() {
           </div>
         ) : (
           <>
+            {/* Name Field */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Full Name
+              </label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Enter your full name"
+                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
+              />
+            </div>
+
+            {/* Email Field */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Email
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter your email"
+                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
+              />
+            </div>
+
             {/* File Upload Box */}
             <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-green-500 transition">
 
@@ -72,7 +119,7 @@ export default function Verify() {
                 onChange={(e) => setFile(e.target.files[0])}
               />
 
-              {file && (
+              {isMounted && file && (
                 <p className="mt-3 text-sm text-green-600">
                   Selected: {file.name}
                 </p>
@@ -82,7 +129,7 @@ export default function Verify() {
             {/* Upload Button */}
             <button
               onClick={upload}
-              disabled={!file || isVerifying}
+              disabled={!name || !email || !file || isVerifying}
               className="mt-6 w-full bg-green-600 text-white py-3 rounded-lg font-semibold
               hover:bg-green-700 transition disabled:opacity-50"
             >
