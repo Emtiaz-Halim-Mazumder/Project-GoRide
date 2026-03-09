@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import Link from 'next/link';
+import Header from '@/components/Header';
 
 export default function GoRidePage() {
   const [formData, setFormData] = useState({
@@ -77,7 +77,9 @@ export default function GoRidePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center p-4">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      <Header />
+      <div className="flex-1 flex flex-col items-center p-4">
       {/* Main card */}
       <div className="w-full max-w-3xl bg-white shadow-lg rounded-xl overflow-hidden">
         {/* Header */}
@@ -234,6 +236,7 @@ export default function GoRidePage() {
             <Link href="/ClassSchedule" className="cursor-pointer hover:text-green-600">Class Schedule</Link>
             <span className="cursor-pointer hover:text-green-600">Contact Us</span>
           </div>
+      </div>
         </div>
       </div>
     </div>
