@@ -16,10 +16,16 @@ export async function POST(req) {
   try {
     await dbConnect();
     const body = await req.json();
+    console.log('Schedule POST body:', body);
+    
     const schedule = await Schedule.create(body);
+    console.log('Schedule created:', schedule);
+    
     return NextResponse.json({ success: true, data: schedule }, { status: 201 });
   } catch (error) {
-    return NextResponse.json({ success: false, message: error.message }, { status: 400 });
+    console.error('Schedule POST error:', error);
+    const errorMessage = error.message || 'Failed to create schedule';
+    return NextResponse.json({ success: false, message: errorMessage, error: error.toString() }, { status: 400 });
   }
 }
 
