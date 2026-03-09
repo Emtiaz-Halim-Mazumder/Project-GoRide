@@ -25,6 +25,13 @@ export default function Header() {
               Offer Ride
             </button>
           </Link>
+
+          <Link href="/verification">
+            <button className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition">
+              Verification
+            </button>
+          </Link>
+
           <Link href="/Dashboard">
             <button className="border-2 border-green-600 text-green-600 hover:bg-green-50 font-medium py-2 px-4 rounded-lg transition">
               Dashboard
