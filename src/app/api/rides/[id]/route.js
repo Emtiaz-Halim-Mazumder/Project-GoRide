@@ -5,7 +5,8 @@ export async function GET(request, { params }) {
   await dbConnect();
 
   try {
-    const ride = await Ride.findById(params.id);
+    const { id } = await params;
+    const ride = await Ride.findById(id);
 
     if (!ride) {
       return Response.json(
@@ -39,8 +40,9 @@ export async function PUT(request, { params }) {
   await dbConnect();
 
   try {
+    const { id } = await params;
     const body = await request.json();
-    const ride = await Ride.findByIdAndUpdate(params.id, body, {
+    const ride = await Ride.findByIdAndUpdate(id, body, {
       new: true,
       runValidators: true,
     });
@@ -77,7 +79,8 @@ export async function DELETE(request, { params }) {
   await dbConnect();
 
   try {
-    const ride = await Ride.findByIdAndDelete(params.id);
+    const { id } = await params;
+    const ride = await Ride.findByIdAndDelete(id);
 
     if (!ride) {
       return Response.json(
