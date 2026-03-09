@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Header from '@/components/Header';
 
 export default function ClassSchedulePage() {
   const [formData, setFormData] = useState({
@@ -104,7 +105,9 @@ export default function ClassSchedulePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center p-4">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      <Header />
+      <div className="flex flex-col items-center p-4">
       <div className="w-full max-w-4xl bg-white shadow-lg rounded-xl overflow-hidden">
         <div className="bg-green-600 text-white py-4 px-6">
           <h1 className="text-2xl font-bold text-center">GoRide - Class Schedule</h1>
@@ -299,6 +302,7 @@ export default function ClassSchedulePage() {
             <span className="cursor-pointer hover:text-green-600">Contact Us</span>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

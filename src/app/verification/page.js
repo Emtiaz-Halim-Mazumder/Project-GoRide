@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Header from "@/components/Header";
 
 export default function Verify() {
   const [name, setName] = useState("");
@@ -45,7 +46,9 @@ export default function Verify() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-green-50 to-white flex items-center justify-center px-6">
+    <div className="min-h-screen bg-gradient-to-b from-green-50 to-white flex flex-col">
+      <Header />
+      <div className="flex items-center justify-center px-6 flex-1">
 
       <div className="bg-white shadow-lg rounded-xl p-8 w-full max-w-md border">
 
@@ -139,6 +142,7 @@ export default function Verify() {
         )}
       </div>
 
+      </div>
     </div>
   );
 }

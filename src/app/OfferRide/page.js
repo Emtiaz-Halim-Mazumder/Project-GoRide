@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Header from '@/components/Header';
-
+import Link from 'next/link';
 export default function GoRidePage() {
   const [formData, setFormData] = useState({
     origin: '',
