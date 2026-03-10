@@ -23,15 +23,29 @@ export default function ClassSchedulePage() {
     fetchSchedules();
   }, []);
 
+  const parseApiResponse = async (response) => {
+    const contentType = response.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
+      const rawText = await response.text();
+      throw new Error(`Server returned non-JSON response (${response.status}). ${rawText.slice(0, 120)}`);
+    }
+
+    const data = await response.json();
+    if (!response.ok || !data.success) {
+      throw new Error(data?.message || `Request failed with status ${response.status}`);
+    }
+
+    return data;
+  };
+
   const fetchSchedules = async () => {
     try {
       const response = await fetch('/api/schedule');
-      const data = await response.json();
-      if (data.success) {
-        setSchedules(data.data);
-      }
+      const data = await parseApiResponse(response);
+      setSchedules(data.data);
     } catch (error) {
       console.error('Error fetching schedules:', error);
+      setMessage(`Error: ${error.message}`);
     }
   };
 
@@ -57,25 +71,21 @@ export default function ClassSchedulePage() {
         body: JSON.stringify(formData),
       });
 
-      const data = await response.json();
+      const data = await parseApiResponse(response);
       console.log('Schedule response:', data);
-      
-      if (data.success) {
-        setMessage('Schedule posted successfully!');
-        fetchSchedules();
-        setFormData({
-          studentName: '',
-          day: 'Monday',
-          startTime: '',
-          endTime: '',
-          origin: '',
-          destination: 'BRAC University',
-          seats: 1,
-          vehicleType: 'Car',
-        });
-      } else {
-        throw new Error(data.message || 'Failed to post schedule');
-      }
+
+      setMessage('Schedule posted successfully!');
+      fetchSchedules();
+      setFormData({
+        studentName: '',
+        day: 'Monday',
+        startTime: '',
+        endTime: '',
+        origin: '',
+        destination: 'BRAC University',
+        seats: 1,
+        vehicleType: 'Car',
+      });
     } catch (error) {
       console.error('Schedule submission error:', error);
       setMessage(`Error: ${error.message}`);
@@ -94,12 +104,11 @@ export default function ClassSchedulePage() {
         body: JSON.stringify({ id, ...update }),
       });
 
-      const data = await response.json();
-      if (data.success) {
-        fetchSchedules();
-      }
+      await parseApiResponse(response);
+      fetchSchedules();
     } catch (error) {
       console.error('Error updating status:', error);
+      setMessage(`Error: ${error.message}`);
     }
   };
 
