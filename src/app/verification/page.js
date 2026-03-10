@@ -46,6 +46,7 @@ export default function Verify() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-white flex items-center justify-center px-6">
+      
 
       <div className="bg-white shadow-lg rounded-xl p-8 w-full max-w-md border">
 

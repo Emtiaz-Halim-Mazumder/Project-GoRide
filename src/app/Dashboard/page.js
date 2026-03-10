@@ -1,7 +1,8 @@
 'use client';
 
+import Header from '@/Components/Header';
 import React, { useState, useEffect } from 'react';
-import Header from '@/components/Header';
+
 
 export default function DashboardPage() {
   const [rides, setRides] = useState([]);
@@ -158,7 +159,7 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      <Header />
+      <Header/>
       <div className="flex-1 flex flex-col items-center p-4">
       {/* Main card */}
       <div className="w-full max-w-5xl bg-white shadow-lg rounded-xl overflow-hidden">

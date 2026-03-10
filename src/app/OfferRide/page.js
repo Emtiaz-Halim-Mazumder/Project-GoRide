@@ -1,7 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import Header from '@/components/Header';
+
+import Link from 'next/link';
+import Header from '@/Components/Header';
 
 export default function GoRidePage() {
   const [formData, setFormData] = useState({
