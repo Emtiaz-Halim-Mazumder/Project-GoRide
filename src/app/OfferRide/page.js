@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 
 import Link from 'next/link';
 import Header from '@/Components/Header';
+import PreferencesModal from '@/Components/PreferencesModal';
+import { preferenceOptions, nameToOption } from '@/lib/preferenceOptions';
 
 export default function GoRidePage() {
   const [formData, setFormData] = useState({
@@ -15,6 +17,10 @@ export default function GoRidePage() {
     endTime: '',
     vehicleType: '',
   });
+
+  // preferences state and modal visibility
+  const [preferences, setPreferences] = useState([]);
+  const [showPrefsModal, setShowPrefsModal] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
@@ -32,8 +38,19 @@ export default function GoRidePage() {
   };
 
   const handlePreferences = () => {
-    alert('Preferences settings will open here');
+    setShowPrefsModal(true);
   };
+
+  const togglePreference = (pref) => {
+    setPreferences((prev) =>
+      prev.includes(pref) ? prev.filter((p) => p !== pref) : [...prev, pref]
+    );
+  };
+
+  const closeModal = () => {
+    setShowPrefsModal(false);
+  };
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -52,7 +69,7 @@ export default function GoRidePage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ ...formData, preferences }),
       });
 
       const data = await response.json();
@@ -71,6 +88,7 @@ export default function GoRidePage() {
         endTime: '',
         vehicleType: '',
       });
+      setPreferences([]);
     } catch (error) {
       setMessage(`Error: ${error.message}`);
     } finally {
@@ -227,7 +245,41 @@ export default function GoRidePage() {
                 {loading ? 'Submitting...' : 'Offer Ride'}
               </button>
             </div>
+            {/* preferences alert display as badges */}
+            {preferences.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-2">
+                {preferences.map((name) => {
+                  const opt = nameToOption[name];
+                  if (!opt) return null;
+                  const colorMap = {
+                    pink: 'bg-pink-100 text-pink-800',
+                    gray: 'bg-gray-100 text-gray-800',
+                    blue: 'bg-blue-100 text-blue-800',
+                    purple: 'bg-purple-100 text-purple-800',
+                    yellow: 'bg-yellow-100 text-yellow-800',
+                    orange: 'bg-orange-100 text-orange-800',
+                    cyan: 'bg-cyan-100 text-cyan-800',
+                    green: 'bg-green-100 text-green-800',
+                  };
+                  const clz = colorMap[opt.color] || colorMap.gray;
+                  return (
+                    <span
+                      key={name}
+                      className={`${clz} px-2 py-1 text-xs rounded-full`}
+                    >
+                      {opt.label}
+                    </span>
+                  );
+                })}
+              </div>
+            )}
           </form>
+          <PreferencesModal
+            show={showPrefsModal}
+            onClose={closeModal}
+            selectedPrefs={preferences}
+            togglePreference={togglePreference}
+          />
         </div>
 
 
