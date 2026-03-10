@@ -31,7 +31,7 @@ export async function POST(request) {
     const body = await request.json();
 
     // Map form data to Ride schema
-    const { origin, destination, date, availableSeats, startTime, endTime, vehicleType } = body;
+    const { origin, destination, date, availableSeats, startTime, endTime, vehicleType, preferences } = body;
 
     // Validate required fields
     if (!origin || !destination || !date || !availableSeats || !startTime || !endTime || !vehicleType) {
@@ -61,6 +61,16 @@ export async function POST(request) {
       fare: 0, // To be calculated
       description: '',
       status: 'active',
+      preferences: preferences || {
+        femaleOnly: false,
+        noSmoking: false,
+        quietRide: false,
+        musicOk: false,
+        petsAllowed: false,
+        noEating: false,
+        acRequired: false,
+        studentOnly: false,
+      },
     };
 
     const ride = await Ride.create(rideData);

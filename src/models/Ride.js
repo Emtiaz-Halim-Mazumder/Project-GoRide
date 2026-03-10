@@ -55,6 +55,16 @@ const rideSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    preferences: {
+      femaleOnly: { type: Boolean, default: false },
+      noSmoking: { type: Boolean, default: false },
+      quietRide: { type: Boolean, default: false },
+      musicOk: { type: Boolean, default: false },
+      petsAllowed: { type: Boolean, default: false },
+      noEating: { type: Boolean, default: false },
+      acRequired: { type: Boolean, default: false },
+      studentOnly: { type: Boolean, default: false },
+    },
     status: {
       type: String,
       enum: ['active', 'completed', 'cancelled'],
