@@ -55,6 +55,10 @@ const rideSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    preferences: {
+      type: [String],
+      default: [],
+    },
     status: {
       type: String,
       enum: ['active', 'completed', 'cancelled'],

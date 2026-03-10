@@ -2,11 +2,13 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Header from '@/Components/Header';
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-white">
       {/* Navigation Bar */}
+      
       <nav className="bg-white shadow-md sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
           <div className="flex items-center space-x-2">

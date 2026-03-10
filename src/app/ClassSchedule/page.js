@@ -105,6 +105,7 @@ export default function ClassSchedulePage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center p-4">
+      
       <div className="w-full max-w-4xl bg-white shadow-lg rounded-xl overflow-hidden">
         <div className="bg-green-600 text-white py-4 px-6">
           <h1 className="text-2xl font-bold text-center">GoRide - Class Schedule</h1>
@@ -293,11 +294,11 @@ export default function ClassSchedulePage() {
         </div>
 
         <div className="border-t border-gray-200 bg-gray-50 py-3 px-6">
-          <div className="flex justify-center space-x-8 text-gray-700 font-medium">
-            <Link href="/OfferRide" className="cursor-pointer hover:text-green-600">Home</Link>
-            <Link href="/ClassSchedule" className="cursor-pointer hover:text-green-600 text-green-600">Class Schedule</Link>
-            <span className="cursor-pointer hover:text-green-600">Contact Us</span>
-          </div>
+          
+            
+            
+            
+          
         </div>
       </div>
     </div>

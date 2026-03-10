@@ -1,12 +1,27 @@
 'use client';
 
+import Header from '@/Components/Header';
 import React, { useState, useEffect } from 'react';
-import Header from '@/components/Header';
+import PreferencesModal from '@/Components/PreferencesModal';
+import { preferenceOptions, nameToOption } from '@/lib/preferenceOptions';
+
 
 export default function DashboardPage() {
   const [rides, setRides] = useState([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
+
+  // filter preferences state
+  const [filterPrefs, setFilterPrefs] = useState([]);
+  const [showFilterModal, setShowFilterModal] = useState(false);
+
+  const toggleFilterPref = (pref) => {
+    setFilterPrefs(prev =>
+      prev.includes(pref) ? prev.filter(p => p !== pref) : [...prev, pref]
+    );
+  };
+  const closeFilterModal = () => setShowFilterModal(false);
+
   const [editingId, setEditingId] = useState(null);
   const [editFormData, setEditFormData] = useState({
     origin: '',
@@ -28,6 +43,13 @@ export default function DashboardPage() {
   useEffect(() => {
     fetchRides();
   }, []);
+
+  const ridesToShow = filterPrefs.length > 0
+    ? rides.filter(r =>
+        Array.isArray(r.preferences) &&
+        filterPrefs.every(p => r.preferences.includes(p))
+      )
+    : rides;
 
   const fetchRides = async () => {
     setLoading(true);
@@ -158,7 +180,7 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      <Header />
+      <Header/>
       <div className="flex-1 flex flex-col items-center p-4">
       {/* Main card */}
       <div className="w-full max-w-5xl bg-white shadow-lg rounded-xl overflow-hidden">
@@ -170,6 +192,50 @@ export default function DashboardPage() {
         {/* Content */}
         <div className="p-6">
           <h2 className="text-xl font-semibold text-gray-800 mb-4">My Rides</h2>
+          {/* filter controls */}
+          <div className="mb-4 flex flex-wrap items-center gap-2">
+            <button
+              onClick={() => setShowFilterModal(true)}
+              className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+            >
+              Filter Preferences
+            </button>
+            {filterPrefs.length > 0 && (
+              <>
+                <div className="flex flex-wrap gap-2">
+                  {filterPrefs.map(name => {
+                    const opt = nameToOption[name];
+                    if (!opt) return null;
+                    const colorMap = {
+                      pink: 'bg-pink-100 text-pink-800',
+                      gray: 'bg-gray-100 text-gray-800',
+                      blue: 'bg-blue-100 text-blue-800',
+                      purple: 'bg-purple-100 text-purple-800',
+                      yellow: 'bg-yellow-100 text-yellow-800',
+                      orange: 'bg-orange-100 text-orange-800',
+                      cyan: 'bg-cyan-100 text-cyan-800',
+                      green: 'bg-green-100 text-green-800',
+                    };
+                    const clz = colorMap[opt.color] || colorMap.gray;
+                    return (
+                      <span
+                        key={name}
+                        className={`${clz} px-2 py-1 text-xs rounded-full flex items-center gap-1`}
+                      >
+                        {opt.label}
+                      </span>
+                    );
+                  })}
+                </div>
+                <button
+                  onClick={() => setFilterPrefs([])}
+                  className="text-sm text-red-600 hover:underline"
+                >
+                  Clear
+                </button>
+              </>
+            )}
+          </div>
 
           {/* Message Display */}
           {message && (
@@ -187,9 +253,13 @@ export default function DashboardPage() {
             <div className="text-center py-8">
               <p className="text-gray-600">No rides offered yet. Start by offering a ride!</p>
             </div>
+          ) : ridesToShow.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-gray-600">No rides match the selected preferences.</p>
+            </div>
           ) : (
             <div className="space-y-4">
-              {rides.map((ride) => (
+              {ridesToShow.map((ride) => (
                 <div key={ride._id} className="border border-gray-300 rounded-lg p-4 bg-gray-50">
                   {editingId === ride._id ? (
                     // Edit Form
@@ -447,6 +517,13 @@ export default function DashboardPage() {
           )}
         </div>
 
+        {/* Filter modal for preferences */}
+        <PreferencesModal
+          show={showFilterModal}
+          onClose={closeFilterModal}
+          selectedPrefs={filterPrefs}
+          togglePreference={toggleFilterPref}
+        />
         {/* Footer navigation */}
         <div className="border-t border-gray-200 bg-gray-50 py-3 px-6">
           <div className="flex justify-center space-x-8 text-gray-700 font-medium">
