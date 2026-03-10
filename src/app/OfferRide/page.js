@@ -1,9 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
-
+import React, { useState, useEffect, useRef } from 'react';
+import Header from '@/components/Header';
+import Script from 'next/script';
 import Link from 'next/link';
-import Header from '@/Components/Header';
+
+const mapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
+const hasGoogleMapsKey = Boolean(mapsApiKey && mapsApiKey !== 'YOUR_GOOGLE_MAPS_API_KEY');
 
 export default function GoRidePage() {
   const [formData, setFormData] = useState({
@@ -18,6 +21,36 @@ export default function GoRidePage() {
 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
+  
+  // Google Maps State
+  const [map, setMap] = useState(null);
+  const [directionsRenderer, setDirectionsRenderer] = useState(null);
+  const [directionsService, setDirectionsService] = useState(null);
+  const [travelInfo, setTravelInfo] = useState(null);
+  const [isApiLoaded, setIsApiLoaded] = useState(false);
+  
+  const mapRef = useRef(null);
+  const originInputRef = useRef(null);
+  const destinationInputRef = useRef(null);
+
+  useEffect(() => {
+    if (!hasGoogleMapsKey) {
+      setMessage('Google Maps is not configured. Add NEXT_PUBLIC_GOOGLE_MAPS_API_KEY in .env.local.');
+    }
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (directionsRenderer) {
+        directionsRenderer.setMap(null);
+      }
+
+      if (typeof window !== 'undefined' && window.google?.maps?.event) {
+        window.google.maps.event.clearInstanceListeners(originInputRef.current);
+        window.google.maps.event.clearInstanceListeners(destinationInputRef.current);
+      }
+    };
+  }, [directionsRenderer]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -33,6 +66,85 @@ export default function GoRidePage() {
 
   const handlePreferences = () => {
     alert('Preferences settings will open here');
+  };
+
+  const initMap = () => {
+    if (typeof window !== 'undefined' && window.google && !map) {
+      const google = window.google;
+      
+      const newMap = new google.maps.Map(mapRef.current, {
+        center: { lat: 23.8103, lng: 90.4125 }, // Dhaka coordinates
+        zoom: 12,
+        mapTypeControl: false,
+      });
+
+      const newRenderer = new google.maps.DirectionsRenderer();
+      newRenderer.setMap(newMap);
+      
+      const newService = new google.maps.DirectionsService();
+
+      setMap(newMap);
+      setDirectionsRenderer(newRenderer);
+      setDirectionsService(newService);
+
+      // Autocomplete setup
+      const originAutocomplete = new google.maps.places.Autocomplete(originInputRef.current);
+      const destinationAutocomplete = new google.maps.places.Autocomplete(destinationInputRef.current);
+
+      originAutocomplete.addListener('place_changed', () => {
+        const place = originAutocomplete.getPlace();
+        if (place.formatted_address) {
+          setFormData(prev => ({ ...prev, origin: place.formatted_address }));
+        }
+      });
+
+      destinationAutocomplete.addListener('place_changed', () => {
+        const place = destinationAutocomplete.getPlace();
+        if (place.formatted_address) {
+          setFormData(prev => ({ ...prev, destination: place.formatted_address }));
+        }
+      });
+      
+      setIsApiLoaded(true);
+    }
+  };
+
+  const handleShowRoute = () => {
+    if (!formData.origin || !formData.destination) {
+      alert('Please enter both origin and destination');
+      return;
+    }
+
+    if (!directionsService || !directionsRenderer) {
+      alert('Google Maps API is still loading...');
+      return;
+    }
+
+    directionsService.route(
+      {
+        origin: formData.origin,
+        destination: formData.destination,
+        travelMode: window.google.maps.TravelMode.DRIVING,
+        drivingOptions: {
+          departureTime: new Date(),
+          trafficModel: window.google.maps.TrafficModel.BEST_GUESS,
+        },
+      },
+      (result, status) => {
+        if (status === window.google.maps.DirectionsStatus.OK) {
+          directionsRenderer.setDirections(result);
+          
+          const route = result.routes[0].legs[0];
+          setTravelInfo({
+            distance: route.distance.text,
+            duration: route.duration.text,
+            durationInTraffic: route.duration_in_traffic ? route.duration_in_traffic.text : null,
+          });
+        } else {
+          alert('Could not find route: ' + status);
+        }
+      }
+    );
   };
 
   const handleSubmit = async (e) => {
@@ -71,6 +183,10 @@ export default function GoRidePage() {
         endTime: '',
         vehicleType: '',
       });
+      if (directionsRenderer) {
+        directionsRenderer.setDirections({ routes: [] });
+      }
+      setTravelInfo(null);
     } catch (error) {
       setMessage(`Error: ${error.message}`);
     } finally {
@@ -81,6 +197,13 @@ export default function GoRidePage() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Header />
+      {hasGoogleMapsKey && (
+        <Script
+          src={`https://maps.googleapis.com/maps/api/js?key=${mapsApiKey}&libraries=places`}
+          onLoad={initMap}
+          onError={() => setMessage('Failed to load Google Maps. Check your API key and restrictions.')}
+        />
+      )}
       <div className="flex-1 flex flex-col items-center p-4">
       {/* Main card */}
       <div className="w-full max-w-3xl bg-white shadow-lg rounded-xl overflow-hidden">
@@ -108,6 +231,7 @@ export default function GoRidePage() {
                 Starting Point (Origin)
               </label>
               <input
+                ref={originInputRef}
                 type="text"
                 name="origin"
                 value={formData.origin}
@@ -123,6 +247,7 @@ export default function GoRidePage() {
                 Destination
               </label>
               <input
+                ref={destinationInputRef}
                 type="text"
                 name="destination"
                 value={formData.destination}
@@ -220,6 +345,13 @@ export default function GoRidePage() {
                 Calculate Fare
               </button>
               <button 
+                type="button"
+                onClick={handleShowRoute}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-6 rounded-lg transition duration-200"
+              >
+                Show Fastest Route
+              </button>
+              <button 
                 type="submit"
                 disabled={loading}
                 className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white font-medium py-2 px-6 rounded-lg transition duration-200"
@@ -228,13 +360,40 @@ export default function GoRidePage() {
               </button>
             </div>
           </form>
+
+          {/* Map and Route Info */}
+          <div className="mt-8 space-y-4">
+            {travelInfo && (
+              <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-100 flex flex-wrap gap-6 justify-around text-indigo-900 font-medium">
+                <div>Distance: <span className="font-bold">{travelInfo.distance}</span></div>
+                <div>Est. Time: <span className="font-bold">{travelInfo.duration}</span></div>
+                {travelInfo.durationInTraffic && (
+                  <div>With Traffic: <span className="font-bold text-red-600">{travelInfo.durationInTraffic}</span></div>
+                )}
+              </div>
+            )}
+            <div className="relative w-full h-96 rounded-xl border-2 border-gray-200 shadow-inner overflow-hidden" style={{ minHeight: '400px' }}>
+              <div
+                ref={mapRef}
+                className="w-full h-full"
+              />
+              {!isApiLoaded && (
+                <div className="absolute inset-0 flex items-center justify-center bg-gray-100 text-gray-500">
+                  Loading Google Maps...
+                </div>
+              )}
+            </div>
+            <p className="text-xs text-gray-500 italic text-center">
+              Routes are calculated based on current Dhaka traffic conditions.
+            </p>
+          </div>
         </div>
 
 
         {/* Footer navigation (Home, Class Schedule, Contact Us) */}
         <div className="border-t border-gray-200 bg-gray-50 py-3 px-6">
           <div className="flex justify-center space-x-8 text-gray-700 font-medium">
-            <Link href="/OfferRide" className="cursor-pointer hover:text-green-600">Home</Link>
+            <Link href="/" className="cursor-pointer hover:text-green-600">Home</Link>
             <Link href="/ClassSchedule" className="cursor-pointer hover:text-green-600">Class Schedule</Link>
             <span className="cursor-pointer hover:text-green-600">Contact Us</span>
           </div>

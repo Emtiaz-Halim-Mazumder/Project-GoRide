@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 
 export default function ClassSchedulePage() {
+  const [isMounted, setIsMounted] = useState(false);
   const [formData, setFormData] = useState({
     studentName: '',
     day: 'Monday',
@@ -20,17 +21,46 @@ export default function ClassSchedulePage() {
   const [message, setMessage] = useState('');
 
   useEffect(() => {
-    fetchSchedules();
+    setIsMounted(true);
   }, []);
 
-  const fetchSchedules = async () => {
+  useEffect(() => {
+    if (!isMounted) {
+      return;
+    }
+
+    const controller = new AbortController();
+    fetchSchedules(controller.signal);
+
+    return () => {
+      controller.abort();
+    };
+  }, [isMounted]);
+
+  const parseApiResponse = async (response) => {
+    const contentType = response.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
+      const rawText = await response.text();
+      throw new Error(`Server returned non-JSON response (${response.status}). ${rawText.slice(0, 120)}`);
+    }
+
+    const data = await response.json();
+    if (!response.ok || !data.success) {
+      throw new Error(data?.message || `Request failed with status ${response.status}`);
+    }
+
+    return data;
+  };
+
+  const fetchSchedules = async (signal) => {
     try {
-      const response = await fetch('/api/schedule');
-      const data = await response.json();
-      if (data.success) {
-        setSchedules(data.data);
-      }
+      const response = await fetch('/api/schedule', { signal });
+      const data = await parseApiResponse(response);
+      setSchedules(data.data);
     } catch (error) {
+      if (error.name === 'AbortError') {
+        return;
+      }
       console.error('Error fetching schedules:', error);
     }
   };
@@ -57,25 +87,21 @@ export default function ClassSchedulePage() {
         body: JSON.stringify(formData),
       });
 
-      const data = await response.json();
+      const data = await parseApiResponse(response);
       console.log('Schedule response:', data);
-      
-      if (data.success) {
-        setMessage('Schedule posted successfully!');
-        fetchSchedules();
-        setFormData({
-          studentName: '',
-          day: 'Monday',
-          startTime: '',
-          endTime: '',
-          origin: '',
-          destination: 'BRAC University',
-          seats: 1,
-          vehicleType: 'Car',
-        });
-      } else {
-        throw new Error(data.message || 'Failed to post schedule');
-      }
+
+      setMessage('Schedule posted successfully!');
+      fetchSchedules();
+      setFormData({
+        studentName: '',
+        day: 'Monday',
+        startTime: '',
+        endTime: '',
+        origin: '',
+        destination: 'BRAC University',
+        seats: 1,
+        vehicleType: 'Car',
+      });
     } catch (error) {
       console.error('Schedule submission error:', error);
       setMessage(`Error: ${error.message}`);
@@ -94,18 +120,20 @@ export default function ClassSchedulePage() {
         body: JSON.stringify({ id, ...update }),
       });
 
-      const data = await response.json();
-      if (data.success) {
-        fetchSchedules();
-      }
+      await parseApiResponse(response);
+      fetchSchedules();
     } catch (error) {
       console.error('Error updating status:', error);
+      setMessage(`Error: ${error.message}`);
     }
   };
 
+  if (!isMounted) {
+    return <div className="min-h-screen bg-gray-50" />;
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center p-4">
-      
+    <div suppressHydrationWarning className="min-h-screen bg-gray-50 flex flex-col items-center p-4">
       <div className="w-full max-w-4xl bg-white shadow-lg rounded-xl overflow-hidden">
         <div className="bg-green-600 text-white py-4 px-6">
           <h1 className="text-2xl font-bold text-center">GoRide - Class Schedule</h1>
