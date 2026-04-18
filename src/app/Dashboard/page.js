@@ -1,8 +1,9 @@
 'use client';
 
-import Header from '@/Components/Header';
+import Header from '@/components/Header';
 import React, { useState, useEffect } from 'react';
-import PreferencesModal from '@/Components/PreferencesModal';
+import Link from 'next/link';
+import PreferencesModal from '@/components/PreferencesModal';
 import { preferenceOptions, nameToOption } from '@/lib/preferenceOptions';
 
 
@@ -10,6 +11,8 @@ export default function DashboardPage() {
   const [rides, setRides] = useState([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
+  const [user, setUser] = useState(null);
+  const [activeTab, setActiveTab] = useState('myRides');
 
   // filter preferences state
   const [filterPrefs, setFilterPrefs] = useState([]);
@@ -41,32 +44,61 @@ export default function DashboardPage() {
 
   // Fetch all rides on component mount
   useEffect(() => {
-    fetchRides();
+    fetchProfileAndRides();
   }, []);
 
+  const myRides = rides.filter(r => r.creator?._id === user?._id || (!r.creator && activeTab === 'myRides')); // fallback for older tests
+  const othersRides = rides.filter(r => r.creator?._id !== user?._id && r.creator); // only valid creators for others
+  const currentRides = activeTab === 'myRides' ? myRides : othersRides;
+
   const ridesToShow = filterPrefs.length > 0
-    ? rides.filter(r =>
+    ? currentRides.filter(r =>
         Array.isArray(r.preferences) &&
         filterPrefs.every(p => r.preferences.includes(p))
       )
-    : rides;
+    : currentRides;
 
-  const fetchRides = async () => {
+  const fetchProfileAndRides = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/rides');
-      const data = await response.json();
+      const [profileRes, ridesRes] = await Promise.all([
+        fetch('/api/auth/me'),
+        fetch('/api/rides')
+      ]);
 
-      if (data.success) {
-        setRides(data.data);
+      if (profileRes.ok) {
+        const profileData = await profileRes.json();
+        setUser(profileData.user);
+      }
+
+      const ridesData = await ridesRes.json();
+      if (ridesData.success) {
+        setRides(ridesData.data);
         setMessage('');
+      } else {
+        setMessage(`Error: ${ridesData.error}`);
+      }
+    } catch (error) {
+      setMessage(`Error fetching data: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAcceptRide = async (id) => {
+    try {
+      const response = await fetch(`/api/rides/${id}/accept`, {
+        method: 'POST',
+      });
+      const data = await response.json();
+      if (data.success) {
+        setMessage('Ride accepted successfully!');
+        fetchProfileAndRides();
       } else {
         setMessage(`Error: ${data.error}`);
       }
     } catch (error) {
-      setMessage(`Error fetching rides: ${error.message}`);
-    } finally {
-      setLoading(false);
+      setMessage(`Error accepting ride: ${error.message}`);
     }
   };
 
@@ -128,7 +160,7 @@ export default function DashboardPage() {
       if (data.success) {
         setMessage('Ride updated successfully!');
         setEditingId(null);
-        fetchRides();
+        fetchProfileAndRides();
       } else {
         setMessage(`Error: ${data.error}`);
       }
@@ -150,7 +182,7 @@ export default function DashboardPage() {
       const data = await response.json();
       if (data.success) {
         setMessage('Ride deleted successfully!');
-        fetchRides();
+        fetchProfileAndRides();
       } else {
         setMessage(`Error: ${data.error}`);
       }
@@ -185,13 +217,29 @@ export default function DashboardPage() {
       {/* Main card */}
       <div className="w-full max-w-5xl bg-white shadow-lg rounded-xl overflow-hidden">
         {/* Header */}
-        <div className="bg-green-600 text-white py-4 px-6">
+        <div className="bg-green-600 text-white py-4 px-6 flex justify-between items-center">
           <h1 className="text-2xl font-bold">GoRide Dashboard</h1>
+          <Link href="/profile" className="bg-white text-green-600 px-4 py-2 rounded-lg font-semibold shadow-sm hover:bg-gray-100 transition-colors text-sm">
+            My Profile
+          </Link>
         </div>
 
         {/* Content */}
         <div className="p-6">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">My Rides</h2>
+          <div className="flex gap-4 mb-6 border-b border-gray-200">
+            <button 
+              className={`pb-2 px-1 font-semibold text-lg ${activeTab === 'myRides' ? 'border-b-2 border-green-600 text-green-600' : 'text-gray-500 hover:text-gray-700'}`}
+              onClick={() => setActiveTab('myRides')}
+            >
+              My Rides
+            </button>
+            <button 
+              className={`pb-2 px-1 font-semibold text-lg ${activeTab === 'othersRides' ? 'border-b-2 border-green-600 text-green-600' : 'text-gray-500 hover:text-gray-700'}`}
+              onClick={() => setActiveTab('othersRides')}
+            >
+              Other's Rides
+            </button>
+          </div>
           {/* filter controls */}
           <div className="mb-4 flex flex-wrap items-center gap-2">
             <button
@@ -461,7 +509,7 @@ export default function DashboardPage() {
                         </span>
                       </div>
 
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4 text-sm">
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4 text-sm">
                         <div>
                           <p className="text-gray-600">Seats</p>
                           <p className="font-semibold text-gray-800">{ride.seats}</p>
@@ -476,8 +524,20 @@ export default function DashboardPage() {
                         </div>
                         <div>
                           <p className="text-gray-600">Fare</p>
-                          <p className="font-semibold text-gray-800">{ride.fare ? `৳${ride.fare}` : 'TBD'}</p>
+                          <p className="font-semibold text-gray-800">{ride.fare ? `৳${ride.fare}/person` : 'TBD'}</p>
                         </div>
+                        {ride.distanceKm && (
+                          <div>
+                            <p className="text-gray-600">Distance</p>
+                            <p className="font-semibold text-gray-800">{ride.distanceKm} km</p>
+                          </div>
+                        )}
+                        {ride.duration && (
+                          <div>
+                            <p className="text-gray-600">Est. Time</p>
+                            <p className="font-semibold text-gray-800">{ride.duration}</p>
+                          </div>
+                        )}
                       </div>
 
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4 text-sm">
@@ -495,19 +555,48 @@ export default function DashboardPage() {
                         </div>
                       </div>
 
-                      <div className="flex gap-3">
-                        <button
-                          onClick={() => handleEditClick(ride)}
-                          className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleDeleteRide(ride._id)}
-                          className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200"
-                        >
-                          Delete
-                        </button>
+                      <div className="flex gap-3 items-center">
+                        {activeTab === 'myRides' ? (
+                          <>
+                            <button
+                              onClick={() => handleEditClick(ride)}
+                              className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => handleDeleteRide(ride._id)}
+                              className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200"
+                            >
+                              Delete
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            onClick={() => handleAcceptRide(ride._id)}
+                            disabled={ride.seats <= 0 || (user && ride.passengers && ride.passengers.includes(user._id))}
+                            className={`font-medium py-2 px-6 rounded-lg transition duration-200 ${
+                              user && ride.passengers && ride.passengers.includes(user._id)
+                                ? 'bg-gray-200 text-gray-600 cursor-not-allowed' 
+                                : ride.seats <= 0 
+                                  ? 'bg-red-100 text-red-800 cursor-not-allowed'
+                                  : 'bg-green-600 hover:bg-green-700 text-white shadow-md'
+                            }`}
+                          >
+                            {user && ride.passengers && ride.passengers.includes(user._id)
+                              ? 'Accepted'
+                              : ride.seats <= 0
+                                ? 'Full'
+                                : 'Accept Ride'
+                            }
+                          </button>
+                        )}
+                        {/* Display creator info if available */}
+                        {activeTab === 'othersRides' && ride.creator && (
+                          <span className="text-sm text-gray-500 ml-auto">
+                            Offered by: <span className="font-semibold text-gray-700">{ride.creator.name}</span>
+                          </span>
+                        )}
                       </div>
                     </div>
                   )}

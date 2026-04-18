@@ -3,9 +3,15 @@
 import React, { useState } from 'react';
 
 import Link from 'next/link';
-import Header from '@/Components/Header';
-import PreferencesModal from '@/Components/PreferencesModal';
+import Header from '@/components/Header';
+import PreferencesModal from '@/components/PreferencesModal';
 import { preferenceOptions, nameToOption } from '@/lib/preferenceOptions';
+import dynamic from 'next/dynamic';
+
+const RouteMap = dynamic(() => import('@/components/RouteMap'), {
+  ssr: false,
+  loading: () => <div className="h-full w-full min-h-[400px] bg-gray-100 animate-pulse flex items-center justify-center text-gray-500 font-medium">Loading Map...</div>
+});
 
 export default function GoRidePage() {
   const [formData, setFormData] = useState({
@@ -16,6 +22,7 @@ export default function GoRidePage() {
     startTime: '',
     endTime: '',
     vehicleType: '',
+    fare: '',
   });
 
   // preferences state and modal visibility
@@ -25,16 +32,66 @@ export default function GoRidePage() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
 
+  // Fare calculation state
+  const [fareData, setFareData] = useState(null);
+  const [fareLoading, setFareLoading] = useState(false);
+  const [fareError, setFareError] = useState('');
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
       [name]: value
     }));
+    // Clear fare data if origin/destination/vehicle/seats change
+    if (['origin', 'destination', 'vehicleType', 'availableSeats'].includes(name)) {
+      setFareData(null);
+      setFareError('');
+    }
   };
 
-  const handleCalculateFare = () => {
-    alert(`Fare calculation for: ${formData.origin} to ${formData.destination}`);
+  const handleCalculateFare = async () => {
+    if (!formData.origin || !formData.destination) {
+      setFareError('Please enter both origin and destination');
+      return;
+    }
+    if (!formData.vehicleType) {
+      setFareError('Please select a vehicle type');
+      return;
+    }
+    if (!formData.availableSeats) {
+      setFareError('Please select available seats');
+      return;
+    }
+
+    setFareLoading(true);
+    setFareError('');
+    setFareData(null);
+
+    try {
+      const res = await fetch(
+        `/api/distance?origin=${encodeURIComponent(formData.origin)}&destination=${encodeURIComponent(formData.destination)}`
+      );
+      const data = await res.json();
+
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to calculate distance');
+      }
+
+      setFareData(data);
+
+      // Auto-fill the per-person fare
+      const vehicleCosts = data.fuelCosts[formData.vehicleType];
+      if (vehicleCosts) {
+        const seats = formData.availableSeats;
+        const perPerson = vehicleCosts.perSeat[seats] || vehicleCosts.perSeat['1'];
+        setFormData(prev => ({ ...prev, fare: perPerson.toString() }));
+      }
+    } catch (err) {
+      setFareError(err.message);
+    } finally {
+      setFareLoading(false);
+    }
   };
 
   const handlePreferences = () => {
@@ -64,12 +121,21 @@ export default function GoRidePage() {
     setMessage('');
 
     try {
+      const submitData = {
+        ...formData,
+        preferences,
+        ...(fareData && {
+          distanceKm: fareData.distance_km,
+          duration: fareData.duration_text,
+        }),
+      };
+
       const response = await fetch('/api/rides', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ ...formData, preferences }),
+        body: JSON.stringify(submitData),
       });
 
       const data = await response.json();
@@ -87,8 +153,11 @@ export default function GoRidePage() {
         startTime: '',
         endTime: '',
         vehicleType: '',
+        fare: '',
       });
       setPreferences([]);
+      setFareData(null);
+      setFareError('');
     } catch (error) {
       setMessage(`Error: ${error.message}`);
     } finally {
@@ -101,16 +170,17 @@ export default function GoRidePage() {
       <Header />
       <div className="flex-1 flex flex-col items-center p-4">
       {/* Main card */}
-      <div className="w-full max-w-3xl bg-white shadow-lg rounded-xl overflow-hidden">
+      <div className="w-full max-w-6xl bg-white shadow-lg rounded-xl overflow-hidden">
         {/* Header */}
         <div className="bg-green-600 text-white py-4 px-6">
           <h1 className="text-2xl font-bold">GoRide</h1>
         </div>
 
-        {/* Offer A Ride section */}
-        <div className="p-6">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">Offer A Ride</h2>
-          <p className="text-gray-600 mb-6">Share your commute with fellow students</p>
+        <div className="flex flex-col md:flex-row">
+          {/* Left Column: Form */}
+          <div className="w-full md:w-1/2 p-6 border-b md:border-b-0 md:border-r border-gray-200">
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">Offer A Ride</h2>
+            <p className="text-gray-600 mb-6">Share your commute with fellow students</p>
 
           {/* Message Display */}
           {message && (
@@ -233,9 +303,18 @@ export default function GoRidePage() {
               <button 
                 type="button"
                 onClick={handleCalculateFare}
-                className="bg-yellow-600 hover:bg-yellow-700 text-white font-medium py-2 px-6 rounded-lg transition duration-200"
+                disabled={fareLoading}
+                className="bg-yellow-600 hover:bg-yellow-700 disabled:bg-gray-400 text-white font-medium py-2 px-6 rounded-lg transition duration-200 flex items-center gap-2"
               >
-                Calculate Fare
+                {fareLoading ? (
+                  <>
+                    <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Calculating...
+                  </>
+                ) : 'Calculate Fare'}
               </button>
               <button 
                 type="submit"
@@ -245,6 +324,71 @@ export default function GoRidePage() {
                 {loading ? 'Submitting...' : 'Offer Ride'}
               </button>
             </div>
+
+            {/* Fare Error */}
+            {fareError && (
+              <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                ⚠️ {fareError}
+              </div>
+            )}
+
+            {/* Fare Breakdown Card */}
+            {fareData && (
+              <div className="mt-4 bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-xl p-5 animate-in slide-in-from-top" style={{ animation: 'slideDown 0.3s ease-out' }}>
+                <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                  <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path></svg>
+                  Route Details
+                </h3>
+
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div className="bg-white rounded-lg p-3 shadow-sm">
+                    <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Distance</p>
+                    <p className="text-xl font-bold text-gray-900">{fareData.distance_text}</p>
+                  </div>
+                  <div className="bg-white rounded-lg p-3 shadow-sm">
+                    <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Est. Travel Time</p>
+                    <p className="text-xl font-bold text-gray-900">{fareData.duration_text}</p>
+                  </div>
+                </div>
+
+                {formData.vehicleType && fareData.fuelCosts[formData.vehicleType] && (
+                  <div className="bg-white rounded-lg p-4 shadow-sm mb-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-sm text-gray-600">Total fuel cost ({formData.vehicleType})</p>
+                      <p className="text-lg font-bold text-gray-800">৳{fareData.fuelCosts[formData.vehicleType].total}</p>
+                    </div>
+                    <div className="border-t border-green-100 pt-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-green-700">Suggested per-person share</p>
+                          <p className="text-xs text-gray-500">{formData.availableSeats} seat{formData.availableSeats !== '1' ? 's' : ''}</p>
+                        </div>
+                        <p className="text-2xl font-extrabold text-green-600">
+                          ৳{fareData.fuelCosts[formData.vehicleType].perSeat[formData.availableSeats] || fareData.fuelCosts[formData.vehicleType].perSeat['1']}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Fare per person (editable)</label>
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg font-bold text-gray-600">৳</span>
+                    <input
+                      type="number"
+                      name="fare"
+                      value={formData.fare}
+                      onChange={handleInputChange}
+                      min="0"
+                      placeholder="Adjust fare if needed"
+                      className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900 font-semibold"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">You can adjust the suggested fare before submitting</p>
+                </div>
+              </div>
+            )}
             {/* preferences alert display as badges */}
             {preferences.length > 0 && (
               <div className="mt-2 flex flex-wrap gap-2">
@@ -281,6 +425,14 @@ export default function GoRidePage() {
             togglePreference={togglePreference}
           />
         </div>
+
+        {/* Right Column: Map */}
+        <div className="w-full md:w-1/2 bg-gray-50 min-h-[400px] relative">
+          <div className="sticky top-0 h-full w-full min-h-[400px] md:h-screen md:max-h-[800px]">
+            <RouteMap fareData={fareData} />
+          </div>
+        </div>
+      </div>
 
 
         {/* Footer navigation (Home, Class Schedule, Contact Us) */}

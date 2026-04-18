@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import Header from '@/Components/Header';
+import Header from '@/components/Header';
 
 export default function Home() {
   return (
@@ -22,11 +22,6 @@ export default function Home() {
             <a href="#contact" className="hover:text-green-600 transition">Contact</a>
           </div>
           <div className="flex space-x-3">
-            <Link href="/OfferRide">
-              <button className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition">
-                Offer Ride
-              </button>
-            </Link>
 
             <Link href="/verification">
               <button className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition">
@@ -208,7 +203,6 @@ export default function Home() {
             <div>
               <h4 className="text-white font-bold mb-4">Quick Links</h4>
               <ul className="space-y-2">
-                <li><a href="#" className="hover:text-green-500 transition">Offer Ride</a></li>
                 <li><a href="#" className="hover:text-green-500 transition">Dashboard</a></li>
                 <li><a href="#" className="hover:text-green-500 transition">How It Works</a></li>
               </ul>
