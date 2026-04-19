@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import Header from "@/Components/Header";
 import {
   departments,
@@ -44,6 +45,8 @@ export default function FindRidePage() {
   const [searched, setSearched] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showModal, setShowModal] = useState(false);
+  const [selectedRide, setSelectedRide] = useState(null);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -316,7 +319,14 @@ export default function FindRidePage() {
                 ) : (
                   <div className="space-y-4">
                     {rides.map((ride) => (
-                      <RideCard key={ride._id} ride={ride} />
+                      <RideCard 
+                        key={ride._id} 
+                        ride={ride}
+                        onViewDetails={() => {
+                          setSelectedRide(ride);
+                          setShowModal(true);
+                        }}
+                      />
                     ))}
                   </div>
                 )}
@@ -340,11 +350,40 @@ export default function FindRidePage() {
           </div>
         </div>
       </div>
+
+      {/* Ride Details Modal */}
+      {showModal && selectedRide && (
+        <RideDetailsModal 
+          ride={selectedRide} 
+          onClose={() => setShowModal(false)} 
+        />
+      )}
     </div>
   );
 }
 
-function RideCard({ ride }) {
+function RideCard({ ride, onViewDetails }) {
+  const router = useRouter();
+
+  const handleConfirmRide = async () => {
+    try {
+      const response = await fetch(`/api/rides/${ride._id}/accept`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ riderId: "current-user-id" }), // Replace with actual user ID
+      });
+
+      if (response.ok) {
+        alert(`✓ Ride confirmed! Driver will contact you soon.`);
+        router.push("/Dashboard");
+      } else {
+        alert("Failed to confirm ride. Please try again.");
+      }
+    } catch (error) {
+      alert("Error confirming ride: " + error.message);
+    }
+  };
+
   return (
     <div className="border border-gray-200 rounded-xl p-4 bg-gray-50 hover:bg-white transition shadow-sm">
       {/* Route + status */}
@@ -435,6 +474,209 @@ function RideCard({ ride }) {
       {ride.description && (
         <p className="mt-2 text-xs text-gray-500 italic">{ride.description}</p>
       )}
+
+      {/* Action buttons */}
+      <div className="mt-4 flex gap-3">
+        <button
+          onClick={onViewDetails}
+          className="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg transition text-sm"
+        >
+          View Details
+        </button>
+        <button
+          onClick={handleConfirmRide}
+          className="flex-1 bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition text-sm"
+        >
+          Confirm
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function RideDetailsModal({ ride, onClose }) {
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        {/* Header */}
+        <div className="sticky top-0 bg-gradient-to-r from-green-600 to-green-700 text-white p-6 flex justify-between items-center">
+          <h2 className="text-2xl font-bold">Ride Details</h2>
+          <button
+            onClick={onClose}
+            className="text-white hover:bg-green-800 rounded-full p-2 transition"
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="p-6 space-y-6">
+          {/* Route Section */}
+          <div className="border-b pb-4">
+            <h3 className="text-lg font-semibold text-gray-800 mb-3">Route</h3>
+            <div className="flex items-center gap-4">
+              <div className="flex-1">
+                <p className="text-sm text-gray-500">From</p>
+                <p className="text-lg font-semibold text-gray-800">{ride.origin}</p>
+              </div>
+              <div className="text-gray-400">→</div>
+              <div className="flex-1">
+                <p className="text-sm text-gray-500">To</p>
+                <p className="text-lg font-semibold text-gray-800">{ride.destination}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Date & Time Section */}
+          <div className="border-b pb-4">
+            <h3 className="text-lg font-semibold text-gray-800 mb-3">Schedule</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-gray-500">Date</p>
+                <p className="text-base font-semibold text-gray-800">
+                  {new Date(ride.date).toLocaleDateString("en-BD", {
+                    weekday: "long",
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Time</p>
+                <p className="text-base font-semibold text-gray-800">{ride.time || "Not specified"}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Driver Section */}
+          <div className="border-b pb-4">
+            <h3 className="text-lg font-semibold text-gray-800 mb-3">Driver Information</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-gray-500">Driver Name</p>
+                <p className="text-base font-semibold text-gray-800">{ride.driverName}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Phone</p>
+                {ride.driverPhone && ride.driverPhone !== "TBD" ? (
+                  <a
+                    href={`tel:${ride.driverPhone}`}
+                    className="text-base font-semibold text-green-600 hover:underline"
+                  >
+                    {ride.driverPhone}
+                  </a>
+                ) : (
+                  <p className="text-base font-semibold text-gray-800">TBD</p>
+                )}
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">License Plate</p>
+                <p className="text-base font-semibold text-gray-800">{ride.licensePlate || "N/A"}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Rating</p>
+                <p className="text-base font-semibold text-gray-800">{ride.driverRating || "New"}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Vehicle Section */}
+          <div className="border-b pb-4">
+            <h3 className="text-lg font-semibold text-gray-800 mb-3">Vehicle Details</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-gray-500">Vehicle Type</p>
+                <p className="text-base font-semibold text-gray-800">{ride.vehicleType}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Available Seats</p>
+                <p className="text-base font-semibold text-gray-800">{ride.seats}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Color</p>
+                <p className="text-base font-semibold text-gray-800">{ride.vehicleColor || "N/A"}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Status</p>
+                <span
+                  className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${STATUS_BADGE[ride.status] || "bg-gray-100 text-gray-700"}`}
+                >
+                  {STATUS_LABELS[ride.status] || ride.status}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Location Section */}
+          {(ride.department || ride.buildingName) && (
+            <div className="border-b pb-4">
+              <h3 className="text-lg font-semibold text-gray-800 mb-3">Campus Location</h3>
+              <div className="flex flex-wrap gap-2">
+                {ride.department && (
+                  <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+                    {departmentMap[ride.department] || ride.department}
+                  </span>
+                )}
+                {ride.buildingName && (
+                  <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+                    {buildingMap[ride.buildingName] || ride.buildingName}
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Fare Section */}
+          <div className="border-b pb-4">
+            <h3 className="text-lg font-semibold text-gray-800 mb-3">Pricing</h3>
+            <div>
+              <p className="text-sm text-gray-500">Fare</p>
+              <p className="text-2xl font-bold text-green-600">
+                {ride.fare ? `৳${ride.fare}` : "TBD"}
+              </p>
+            </div>
+          </div>
+
+          {/* Docs & Description Section */}
+          <div>
+            <h3 className="text-lg font-semibold text-gray-800 mb-3">Additional Info</h3>
+            <div className="space-y-3">
+              <div>
+                <p className="text-sm text-gray-500">Driver Verification</p>
+                <div className="flex items-center mt-1">
+                  <span
+                    className={`text-base font-semibold ${ride.hasApprovedDocs ? "text-green-600" : "text-red-600"}`}
+                  >
+                    {ride.hasApprovedDocs ? "✓ Approved" : "✗ Pending"}
+                  </span>
+                </div>
+              </div>
+              {ride.description && (
+                <div>
+                  <p className="text-sm text-gray-500">Notes</p>
+                  <p className="text-base text-gray-700 mt-1">{ride.description}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 p-6 flex gap-3">
+          <button
+            onClick={onClose}
+            className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-lg transition"
+          >
+            Close
+          </button>
+          <button
+            className="flex-1 bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition"
+          >
+            Confirm Ride
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
