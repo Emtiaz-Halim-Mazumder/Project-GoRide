@@ -25,8 +25,8 @@
     "twilio": "^5.13.1"
   },
   "devDependencies": {
-    "@tailwindcs/postcs": "^4",
+    "@tailwindcss/postcss": "^4",
     "babel-plugin-react-compiler": "1.0.0",
-    "tailwindcs": "^4"
+    "tailwindcss": "^4"
   }
 }

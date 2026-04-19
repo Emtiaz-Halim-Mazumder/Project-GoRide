@@ -26,6 +26,16 @@ export default function DashboardPage() {
   const closeFilterModal = () => setShowFilterModal(false);
 
   const [editingId, setEditingId] = useState(null);
+  
+  // Rating state
+  const [showRatingModal, setShowRatingModal] = useState(false);
+  const [ratingData, setRatingData] = useState({
+    rideId: '',
+    rating: 5,
+    review: '',
+    role: ''
+  });
+
   const [editFormData, setEditFormData] = useState({
     origin: '',
     destination: '',
@@ -208,6 +218,39 @@ export default function DashboardPage() {
       description: '',
       status: '',
     });
+  };
+
+  const handleOpenRatingModal = (rideId, role) => {
+    setRatingData({ rideId, rating: 5, review: '', role });
+    setShowRatingModal(true);
+  };
+
+  const handleSubmitRating = async () => {
+    try {
+      const response = await fetch(`/api/rides/${ratingData.rideId}/rate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          rating: ratingData.rating,
+          review: ratingData.review,
+          role: ratingData.role
+        }),
+      });
+      const data = await response.json();
+      if (data.success) {
+        setMessage('Rating submitted successfully!');
+        setShowRatingModal(false);
+        fetchProfileAndRides();
+      } else {
+        setMessage(`Error: ${data.error}`);
+        if (data.error.includes('Fraud')) {
+           setShowRatingModal(false);
+           fetchProfileAndRides();
+        }
+      }
+    } catch (error) {
+      setMessage(`Error submitting rating: ${error.message}`);
+    }
   };
 
   return (
@@ -564,6 +607,41 @@ export default function DashboardPage() {
                             >
                               Edit
                             </button>
+                            {ride.status === 'active' && (
+                              <button
+                                onClick={() => {
+                                  const [startTime, endTime] = ride.time.split(' - ');
+                                  setEditFormData({
+                                    ...editFormData,
+                                    origin: ride.origin,
+                                    destination: ride.destination,
+                                    date: ride.date.split('T')[0],
+                                    availableSeats: ride.seats.toString(),
+                                    startTime: startTime,
+                                    endTime: endTime,
+                                    vehicleType: ride.vehicleType,
+                                    vehicleNumber: ride.vehicleNumber,
+                                    driverName: ride.driverName,
+                                    driverPhone: ride.driverPhone,
+                                    fare: ride.fare.toString(),
+                                    description: ride.description,
+                                    status: 'completed',
+                                  });
+                                  handleUpdateRide(ride._id);
+                                }}
+                                className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200"
+                              >
+                                Complete
+                              </button>
+                            )}
+                            {ride.status === 'completed' && !ride.riderRating && (
+                                <button
+                                    onClick={() => handleOpenRatingModal(ride._id, 'driver')}
+                                    className="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200"
+                                >
+                                    Rate Rider
+                                </button>
+                            )}
                             <button
                               onClick={() => handleDeleteRide(ride._id)}
                               className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200"
@@ -572,24 +650,34 @@ export default function DashboardPage() {
                             </button>
                           </>
                         ) : (
-                          <button
-                            onClick={() => handleAcceptRide(ride._id)}
-                            disabled={ride.seats <= 0 || (user && ride.passengers && ride.passengers.includes(user._id))}
-                            className={`font-medium py-2 px-6 rounded-lg transition duration-200 ${
-                              user && ride.passengers && ride.passengers.includes(user._id)
-                                ? 'bg-gray-200 text-gray-600 cursor-not-allowed' 
-                                : ride.seats <= 0 
-                                  ? 'bg-red-100 text-red-800 cursor-not-allowed'
-                                  : 'bg-green-600 hover:bg-green-700 text-white shadow-md'
-                            }`}
-                          >
-                            {user && ride.passengers && ride.passengers.includes(user._id)
-                              ? 'Accepted'
-                              : ride.seats <= 0
-                                ? 'Full'
-                                : 'Accept Ride'
-                            }
-                          </button>
+                          <>
+                            <button
+                                onClick={() => handleAcceptRide(ride._id)}
+                                disabled={ride.seats <= 0 || (user && ride.passengers && ride.passengers.includes(user._id))}
+                                className={`font-medium py-2 px-6 rounded-lg transition duration-200 ${
+                                user && ride.passengers && ride.passengers.includes(user._id)
+                                    ? 'bg-gray-200 text-gray-600 cursor-not-allowed' 
+                                    : ride.seats <= 0 
+                                    ? 'bg-red-100 text-red-800 cursor-not-allowed'
+                                    : 'bg-green-600 hover:bg-green-700 text-white shadow-md'
+                                }`}
+                            >
+                                {user && ride.passengers && ride.passengers.includes(user._id)
+                                ? 'Accepted'
+                                : ride.seats <= 0
+                                    ? 'Full'
+                                    : 'Accept Ride'
+                                }
+                            </button>
+                            {ride.status === 'completed' && user && ride.passengers && ride.passengers.includes(user._id) && !ride.driverRating && (
+                                <button
+                                    onClick={() => handleOpenRatingModal(ride._id, 'rider')}
+                                    className="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200"
+                                >
+                                    Rate Driver
+                                </button>
+                            )}
+                          </>
                         )}
                         {/* Display creator info if available */}
                         {activeTab === 'othersRides' && ride.creator && (
@@ -605,6 +693,60 @@ export default function DashboardPage() {
             </div>
           )}
         </div>
+
+        {/* Rating Modal */}
+        {showRatingModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                        Rate your {ratingData.role === 'rider' ? 'Driver' : 'Rider'}
+                    </h2>
+                    
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Rating (1-5 stars)</label>
+                            <div className="flex gap-2">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                    <button
+                                        key={star}
+                                        onClick={() => setRatingData({ ...ratingData, rating: star })}
+                                        className={`text-3xl ${ratingData.rating >= star ? 'text-yellow-400' : 'text-gray-300'}`}
+                                    >
+                                        ★
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Review (Optional)</label>
+                            <textarea
+                                value={ratingData.review}
+                                onChange={(e) => setRatingData({ ...ratingData, review: e.target.value })}
+                                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
+                                rows="3"
+                                placeholder="How was the experience?"
+                            />
+                        </div>
+
+                        <div className="flex gap-3 pt-2">
+                            <button
+                                onClick={handleSubmitRating}
+                                className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg transition duration-200"
+                            >
+                                Submit Rating
+                            </button>
+                            <button
+                                onClick={() => setShowRatingModal(false)}
+                                className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 rounded-lg transition duration-200"
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        )}
 
         {/* Filter modal for preferences */}
         <PreferencesModal

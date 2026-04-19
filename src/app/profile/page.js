@@ -126,12 +126,32 @@ export default function ProfilePage() {
 
               <div className="bg-gradient-to-r from-green-50 to-emerald-100 p-4 rounded-xl border border-green-200">
                 <p className="text-sm text-green-800 font-bold mb-1 flex items-center gap-2">
+                  <span>⭐</span> Trust Score
+                </p>
+                <p className="text-2xl text-green-600 font-extrabold">{user?.trustScore?.toFixed(1) || "5.0"}</p>
+                <p className="text-xs text-green-700 mt-1">Based on {user?.totalRatings || 0} reviews</p>
+              </div>
+
+              <div className="bg-gradient-to-r from-green-50 to-emerald-100 p-4 rounded-xl border border-green-200">
+                <p className="text-sm text-green-800 font-bold mb-1 flex items-center gap-2">
                   <span>🌿</span> GoRide Impact Points
                 </p>
                 <p className="text-2xl text-green-600 font-extrabold">{user?.impactPoints || 0} pts</p>
                 <p className="text-xs text-green-700 mt-1">Earned by saving CO₂ emissions!</p>
               </div>
             </div>
+
+            {user?.isFlagged && (
+              <div className="mt-6 p-4 bg-red-50 rounded-lg border border-red-200 flex items-start space-x-3">
+                <div className="text-red-600 mt-0.5">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd"></path></svg>
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-red-900">Account Flagged</h4>
+                  <p className="text-sm text-red-700 mt-1">Your account has been flagged for suspicious activity. Your Trust Score has been reset.</p>
+                </div>
+              </div>
+            )}
             
             <div className="mt-10 p-4 bg-green-50 rounded-lg border border-green-100 flex items-start space-x-3">
               <div className="text-green-600 mt-0.5">

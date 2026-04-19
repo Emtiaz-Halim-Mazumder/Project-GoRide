@@ -70,6 +70,16 @@ const rideSchema = new mongoose.Schema(
       ref: 'User',
       required: false, // Make it optional for backwards compatibility
     },
+    driverId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: false,
+    },
+    riderId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: false,
+    },
     passengers: [{
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User'
@@ -88,6 +98,38 @@ const rideSchema = new mongoose.Schema(
       type: String,
       enum: ['active', 'completed', 'cancelled'],
       default: 'active',
+    },
+    riderRating: {
+      type: Number,
+      min: 1,
+      max: 5,
+    },
+    riderReview: {
+      type: String,
+      trim: true,
+    },
+    driverRating: {
+      type: Number,
+      min: 1,
+      max: 5,
+    },
+    driverReview: {
+      type: String,
+      trim: true,
+    },
+    rating: {
+      type: Number,
+      min: 1,
+      max: 5,
+    },
+    review: {
+      type: String,
+      trim: true,
+    },
+    trustScore: {
+      type: Number,
+      min: 0,
+      max: 5,
     },
   },
   {
