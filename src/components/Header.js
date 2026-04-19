@@ -20,12 +20,6 @@ export default function Header() {
           <a href="#contact" className="hover:text-green-600 transition">Contact</a>
         </div>
         <div className="flex space-x-3">
-          <Link href="/OfferRide">
-            <button className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition">
-              Offer Ride
-            </button>
-          </Link>
-
           <Link href="/verification">
             <button className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition">
               Verification

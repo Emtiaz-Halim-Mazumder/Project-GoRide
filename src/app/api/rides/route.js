@@ -1,5 +1,13 @@
 import dbConnect from '@/lib/mongodb';
 import Ride from '@/models/Ride';
+import User from '@/models/User';
+import { jwtVerify } from "jose";
+import { cookies } from "next/headers";
+
+const getJwtSecretKey = () => {
+  const secret = process.env.JWT_SECRET || "fallback_default_secret_please_change_in_production";
+  return new TextEncoder().encode(secret);
+};
 
 export async function GET(request) {
   try {
@@ -32,7 +40,7 @@ export async function GET(request) {
       query.date = { $gte: start, $lte: end };
     }
 
-    const rides = await Ride.find(query).sort({ createdAt: -1 });
+    const rides = await Ride.find(query).populate('creator', 'name department phone').sort({ createdAt: -1 });
     return Response.json(
       {
         success: true,
@@ -58,7 +66,7 @@ export async function POST(request) {
     const body = await request.json();
 
     // Map form data to Ride schema
-    const { origin, destination, date, availableSeats, startTime, endTime, vehicleType, preferences, department, buildingName } = body;
+    const { origin, destination, date, availableSeats, startTime, endTime, vehicleType, preferences, fare, distanceKm, duration, department, buildingName } = body;
 
     // Validate required fields
     if (!origin || !destination || !date || !availableSeats || !startTime || !endTime || !vehicleType) {
@@ -85,15 +93,46 @@ export async function POST(request) {
       vehicleNumber: 'TBD', // To be updated by user
       driverName: 'TBD', // To be updated by user
       driverPhone: 'TBD', // To be updated by user
-      fare: 0, // To be calculated
+      fare: fare ? parseInt(fare) : 0,
       description: '',
       status: 'active',
       preferences: Array.isArray(preferences) ? preferences : [],
+      ...(distanceKm && { distanceKm: parseFloat(distanceKm) }),
+      ...(duration && { duration }),
       department: department || '',
       buildingName: buildingName || '',
     };
 
+    const cookieStore = await cookies();
+    const token = cookieStore.get("auth_token")?.value;
+    if (token) {
+      try {
+        const { payload } = await jwtVerify(token, getJwtSecretKey());
+        if (payload.userId) {
+          rideData.creator = payload.userId;
+        }
+      } catch (err) {
+        console.error("Token verification failed in POST /api/rides", err);
+      }
+    }
+
     const ride = await Ride.create(rideData);
+
+    // Calculate and award impact points
+    if (rideData.creator && rideData.distanceKm && rideData.seats) {
+      const distance = rideData.distanceKm;
+      const passengers = rideData.seats;
+      const emission_solo = distance * 150 * passengers;
+      const emission_shared = (distance * 150) / passengers;
+      const reduced_emission = emission_solo - emission_shared;
+      const points = Math.floor(reduced_emission / 150);
+
+      if (points > 0) {
+        await User.findByIdAndUpdate(rideData.creator, {
+          $inc: { impactPoints: points }
+        });
+      }
+    }
 
     return Response.json(
       {
