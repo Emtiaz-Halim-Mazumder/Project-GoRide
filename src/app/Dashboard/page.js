@@ -71,14 +71,14 @@ export default function DashboardPage() {
   const [editingId, setEditingId] = useState(null);
   const [statusUpdating, setStatusUpdating] = useState(null);
   const [autoProgressTimers, setAutoProgressTimers] = useState({});
-  
+
   // Rating state
   const [showRatingModal, setShowRatingModal] = useState(false);
   const [ratingData, setRatingData] = useState({
-    rideId: '',
+    rideId: "",
     rating: 5,
-    review: '',
-    role: ''
+    review: "",
+    role: "",
   });
   const [viewingDocs, setViewingDocs] = useState(null);
   const [docsData, setDocsData] = useState(null);
@@ -97,8 +97,6 @@ export default function DashboardPage() {
     description: "",
     status: "",
   });
-  const [viewingDocs, setViewingDocs] = useState(null);
-  const [docsData, setDocsData] = useState(null);
   const socketRef = useRef(null);
 
   const toggleFilterPref = (pref) =>
@@ -429,31 +427,31 @@ export default function DashboardPage() {
   };
 
   const handleOpenRatingModal = (rideId, role) => {
-    setRatingData({ rideId, rating: 5, review: '', role });
+    setRatingData({ rideId, rating: 5, review: "", role });
     setShowRatingModal(true);
   };
 
   const handleSubmitRating = async () => {
     try {
       const response = await fetch(`/api/rides/${ratingData.rideId}/rate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           rating: ratingData.rating,
           review: ratingData.review,
-          role: ratingData.role
+          role: ratingData.role,
         }),
       });
       const data = await response.json();
       if (data.success) {
-        setMessage('Rating submitted successfully!');
+        setMessage("Rating submitted successfully!");
         setShowRatingModal(false);
         fetchProfileAndRides();
       } else {
         setMessage(`Error: ${data.error}`);
-        if (data.error.includes('Fraud')) {
-           setShowRatingModal(false);
-           fetchProfileAndRides();
+        if (data.error.includes("Fraud")) {
+          setShowRatingModal(false);
+          fetchProfileAndRides();
         }
       }
     } catch (error) {
@@ -949,14 +947,17 @@ export default function DashboardPage() {
                                   💬 Chat
                                 </button>
                               )}
-                              {ride.status === 'completed' && !ride.riderRating && (
-                                <button
-                                  onClick={() => handleOpenRatingModal(ride._id, 'driver')}
-                                  className="text-sm bg-purple-600 hover:bg-purple-700 text-white font-medium py-1.5 px-3 rounded-lg transition"
-                                >
-                                  ⭐ Rate Rider
-                                </button>
-                              )}
+                              {ride.status === "completed" &&
+                                !ride.riderRating && (
+                                  <button
+                                    onClick={() =>
+                                      handleOpenRatingModal(ride._id, "driver")
+                                    }
+                                    className="text-sm bg-purple-600 hover:bg-purple-700 text-white font-medium py-1.5 px-3 rounded-lg transition"
+                                  >
+                                    ⭐ Rate Rider
+                                  </button>
+                                )}
                             </div>
                           </>
                         )}
@@ -990,14 +991,20 @@ export default function DashboardPage() {
                                   ? "Full"
                                   : "Accept Ride"}
                             </button>
-                            {ride.status === 'completed' && user && ride.passengers && ride.passengers.includes(user._id) && !ride.driverRating && (
-                              <button
-                                onClick={() => handleOpenRatingModal(ride._id, 'rider')}
-                                className="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-lg transition"
-                              >
-                                ⭐ Rate Driver
-                              </button>
-                            )}
+                            {ride.status === "completed" &&
+                              user &&
+                              ride.passengers &&
+                              ride.passengers.includes(user._id) &&
+                              !ride.driverRating && (
+                                <button
+                                  onClick={() =>
+                                    handleOpenRatingModal(ride._id, "rider")
+                                  }
+                                  className="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-lg transition"
+                                >
+                                  ⭐ Rate Driver
+                                </button>
+                              )}
                             {ride.creator && (
                               <span className="text-sm text-gray-500 ml-auto">
                                 Offered by:{" "}
@@ -1094,24 +1101,57 @@ export default function DashboardPage() {
               <div className="bg-white rounded-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
                 <div className="p-6">
                   <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-xl font-bold text-gray-800">Driver Documents</h2>
-                    <button onClick={handleCloseDocs} className="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+                    <h2 className="text-xl font-bold text-gray-800">
+                      Driver Documents
+                    </h2>
+                    <button
+                      onClick={handleCloseDocs}
+                      className="text-gray-400 hover:text-gray-600 text-2xl"
+                    >
+                      &times;
+                    </button>
                   </div>
                   <div className="space-y-4">
-                    <div><strong>Name:</strong> {docsData.driverName}</div>
-                    <div><strong>Email:</strong> {docsData.email}</div>
-                    <div><strong>Phone:</strong> {docsData.phone}</div>
-                    <div><strong>Vehicle:</strong> {docsData.vehicleType} - {docsData.vehicleNumber}</div>
-                    <div><strong>Status:</strong> <span className="text-green-600 font-semibold">{docsData.status}</span></div>
-                    {docsData.notes && <div><strong>Notes:</strong> {docsData.notes}</div>}
+                    <div>
+                      <strong>Name:</strong> {docsData.driverName}
+                    </div>
+                    <div>
+                      <strong>Email:</strong> {docsData.email}
+                    </div>
+                    <div>
+                      <strong>Phone:</strong> {docsData.phone}
+                    </div>
+                    <div>
+                      <strong>Vehicle:</strong> {docsData.vehicleType} -{" "}
+                      {docsData.vehicleNumber}
+                    </div>
+                    <div>
+                      <strong>Status:</strong>{" "}
+                      <span className="text-green-600 font-semibold">
+                        {docsData.status}
+                      </span>
+                    </div>
+                    {docsData.notes && (
+                      <div>
+                        <strong>Notes:</strong> {docsData.notes}
+                      </div>
+                    )}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                       <div>
                         <strong>License:</strong>
-                        <img src={`/api/driver-docs/file/${docsData.licenseFileName}`} alt="License" className="mt-2 max-w-full h-auto border rounded" />
+                        <img
+                          src={`/api/driver-docs/file/${docsData.licenseFileName}`}
+                          alt="License"
+                          className="mt-2 max-w-full h-auto border rounded"
+                        />
                       </div>
                       <div>
                         <strong>Registration:</strong>
-                        <img src={`/api/driver-docs/file/${docsData.registrationFileName}`} alt="Registration" className="mt-2 max-w-full h-auto border rounded" />
+                        <img
+                          src={`/api/driver-docs/file/${docsData.registrationFileName}`}
+                          alt="Registration"
+                          className="mt-2 max-w-full h-auto border rounded"
+                        />
                       </div>
                     </div>
                   </div>
@@ -1120,59 +1160,67 @@ export default function DashboardPage() {
             </div>
           )}
 
-        {/* Rating Modal */}
-        {showRatingModal && (
+          {/* Rating Modal */}
+          {showRatingModal && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                        Rate your {ratingData.role === 'rider' ? 'Driver' : 'Rider'}
-                    </h2>
-                    
-                    <div className="space-y-4">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Rating (1-5 stars)</label>
-                            <div className="flex gap-2">
-                                {[1, 2, 3, 4, 5].map((star) => (
-                                    <button
-                                        key={star}
-                                        onClick={() => setRatingData({ ...ratingData, rating: star })}
-                                        className={`text-3xl ${ratingData.rating >= star ? 'text-yellow-400' : 'text-gray-300'}`}
-                                    >
-                                        ★
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
+              <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Rate your {ratingData.role === "rider" ? "Driver" : "Rider"}
+                </h2>
 
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Review (Optional)</label>
-                            <textarea
-                                value={ratingData.review}
-                                onChange={(e) => setRatingData({ ...ratingData, review: e.target.value })}
-                                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
-                                rows="3"
-                                placeholder="How was the experience?"
-                            />
-                        </div>
-
-                        <div className="flex gap-3 pt-2">
-                            <button
-                                onClick={handleSubmitRating}
-                                className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg transition duration-200"
-                            >
-                                Submit Rating
-                            </button>
-                            <button
-                                onClick={() => setShowRatingModal(false)}
-                                className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 rounded-lg transition duration-200"
-                            >
-                                Cancel
-                            </button>
-                        </div>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Rating (1-5 stars)
+                    </label>
+                    <div className="flex gap-2">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          onClick={() =>
+                            setRatingData({ ...ratingData, rating: star })
+                          }
+                          className={`text-3xl ${ratingData.rating >= star ? "text-yellow-400" : "text-gray-300"}`}
+                        >
+                          ★
+                        </button>
+                      ))}
                     </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Review (Optional)
+                    </label>
+                    <textarea
+                      value={ratingData.review}
+                      onChange={(e) =>
+                        setRatingData({ ...ratingData, review: e.target.value })
+                      }
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
+                      rows="3"
+                      placeholder="How was the experience?"
+                    />
+                  </div>
+
+                  <div className="flex gap-3 pt-2">
+                    <button
+                      onClick={handleSubmitRating}
+                      className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg transition duration-200"
+                    >
+                      Submit Rating
+                    </button>
+                    <button
+                      onClick={() => setShowRatingModal(false)}
+                      className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 rounded-lg transition duration-200"
+                    >
+                      Cancel
+                    </button>
+                  </div>
                 </div>
+              </div>
             </div>
-        )}
+          )}
 
           {/* Footer navigation */}
           <div className="border-t border-gray-200 bg-gray-50 py-3 px-6">
@@ -1193,7 +1241,6 @@ export default function DashboardPage() {
                 Driver Docs
               </a>
             </div>
-          </div>
           </div>
         </div>
       </div>

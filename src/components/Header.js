@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import Link from 'next/link';
+import React, { useState } from "react";
+import Link from "next/link";
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -20,9 +20,15 @@ export default function Header() {
 
         {/* Nav Links */}
         <div className="hidden md:flex space-x-6 text-gray-700 font-medium">
-          <Link href="/" className="hover:text-green-600 transition">Home</Link>
-          <Link href="/Dashboard" className="hover:text-green-600 transition">Dashboard</Link>
-          <Link href="/DriverDocs" className="hover:text-green-600 transition">Driver Docs</Link>
+          <Link href="/" className="hover:text-green-600 transition">
+            Home
+          </Link>
+          <Link href="/Dashboard" className="hover:text-green-600 transition">
+            Dashboard
+          </Link>
+          <Link href="/DriverDocs" className="hover:text-green-600 transition">
+            Driver Docs
+          </Link>
         </div>
 
         {/* Action Buttons */}
@@ -50,6 +56,15 @@ export default function Header() {
               Schedule
             </button>
           </Link>
+
+          <button
+            onClick={() =>
+              window.dispatchEvent(new CustomEvent("open-global-chat"))
+            }
+            className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-lg transition text-sm"
+          >
+            💬 Chat
+          </button>
 
           <Link href="/Dashboard">
             <button className="border-2 border-green-600 text-green-600 hover:bg-green-50 font-medium py-2 px-4 rounded-lg transition text-sm">
