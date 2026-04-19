@@ -1,7 +1,10 @@
 import connectMongoDB from "@/lib/mongodb";
 import Ride from "@/models/Ride";
 
-export async function GET(request, { params }) {\n  await connectMongoDB();\n\n  try {
+export async function GET(request, { params }) {
+  await connectMongoDB();
+
+  try {
     const { id } = await params;
     const ride = await Ride.findById(id);
 
@@ -33,7 +36,10 @@ export async function GET(request, { params }) {\n  await connectMongoDB();\n\n 
   }
 }
 
-export async function PUT(request, { params }) {\n  await connectMongoDB();\n\n  try {
+export async function PUT(request, { params }) {
+  await connectMongoDB();
+
+  try {
     const { id } = await params;
     const body = await request.json();
     const ride = await Ride.findByIdAndUpdate(id, body, {
@@ -69,7 +75,10 @@ export async function PUT(request, { params }) {\n  await connectMongoDB();\n\n 
   }
 }
 
-export async function DELETE(request, { params }) {\n  await connectMongoDB();\n\n  try {
+export async function DELETE(request, { params }) {
+  await connectMongoDB();
+
+  try {
     const { id } = await params;
     const ride = await Ride.findByIdAndDelete(id);
 

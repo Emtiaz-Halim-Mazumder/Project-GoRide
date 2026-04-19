@@ -10,7 +10,10 @@ const getJwtSecretKey = () => {
   return new TextEncoder().encode(secret);
 };
 
-export async function POST(request, { params }) {\n  await connectMongoDB();\n\n  try {
+export async function POST(request, { params }) {
+  await connectMongoDB();
+
+  try {
     const { id } = await params;
 
     // Authenticate user

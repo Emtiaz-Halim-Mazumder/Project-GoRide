@@ -70,9 +70,7 @@ const userSchema = new mongoose.Schema(
   },
 );
 
-// Compound indexes for common queries
-userSchema.index({ email: 1 });
-userSchema.index({ studentId: 1 });
+// Compound index only (email/studentId use unique: true auto-index)
 userSchema.index({ role: 1, isFlagged: 1 });
 
 export default mongoose.models.User || mongoose.model("User", userSchema);

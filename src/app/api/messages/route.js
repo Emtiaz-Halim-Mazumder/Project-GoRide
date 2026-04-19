@@ -2,7 +2,10 @@ import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/mongodb";
 import Message from "@/models/Message";
 
-export async function GET(req) {\n  try {\n    await connectMongoDB();\n    const { searchParams } = new URL(req.url);
+export async function GET(req) {
+  try {
+    await connectMongoDB();
+    const { searchParams } = new URL(req.url);
     const rideId = searchParams.get("rideId");
     const since = searchParams.get("since");
 
@@ -30,7 +33,10 @@ export async function GET(req) {\n  try {\n    await connectMongoDB();\n    cons
   }
 }
 
-export async function POST(req) {\n  try {\n    await connectMongoDB();\n    const body = await req.json();
+export async function POST(req) {
+  try {
+    await connectMongoDB();
+    const body = await req.json();
     const { rideId, senderName, senderRole, content } = body;
 
     if (!rideId || !senderName || !content) {
