@@ -22,6 +22,7 @@ const userSchema = new mongoose.Schema(
     sex: {
       type: String,
       required: true,
+      enum: ["male", "female", "other"], // Add based on app needs
     },
     department: {
       type: String,
@@ -37,7 +38,8 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: false, // Not required initially until they set it
+      required: false,
+      select: false, // Never returned in queries
     },
     role: {
       type: String,
@@ -65,7 +67,12 @@ const userSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
+
+// Compound indexes for common queries
+userSchema.index({ email: 1 });
+userSchema.index({ studentId: 1 });
+userSchema.index({ role: 1, isFlagged: 1 });
 
 export default mongoose.models.User || mongoose.model("User", userSchema);

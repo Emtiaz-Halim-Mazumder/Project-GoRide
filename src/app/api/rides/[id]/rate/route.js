@@ -1,42 +1,53 @@
-import dbConnect from '@/lib/mongodb';
-import Ride from '@/models/Ride';
-import User from '@/models/User';
-import ReviewLog from '@/models/ReviewLog';
-import EmergencyContact from '@/models/EmergencyContact';
+import connectMongoDB from "@/lib/mongodb";
+import Ride from "@/models/Ride";
+import User from "@/models/User";
+import ReviewLog from "@/models/ReviewLog";
+import EmergencyContact from "@/models/EmergencyContact";
 import { jwtVerify } from "jose";
 import { NextResponse } from "next/server";
 
 const FRAUD_REPEAT_THRESHOLD = 3;
 
 const getJwtSecretKey = () => {
-  const secret = process.env.JWT_SECRET || "fallback_default_secret_please_change_in_production";
+  const secret =
+    process.env.JWT_SECRET ||
+    "fallback_default_secret_please_change_in_production";
   return new TextEncoder().encode(secret);
 };
 
-export async function POST(request, { params }) {
-  await dbConnect();
-
-  try {
+export async function POST(request, { params }) {\n  await connectMongoDB();\n\n  try {
     const { id } = params;
     const { rating, review, role } = await request.json(); // role: 'rider' or 'driver'
     const numericRating = Number(rating);
 
     if (!numericRating || numericRating < 1 || numericRating > 5) {
-      return NextResponse.json({ success: false, error: "Invalid rating" }, { status: 400 });
+      return NextResponse.json(
+        { success: false, error: "Invalid rating" },
+        { status: 400 },
+      );
     }
 
-    if (review !== undefined && typeof review !== 'string') {
-      return NextResponse.json({ success: false, error: 'Invalid review' }, { status: 400 });
+    if (review !== undefined && typeof review !== "string") {
+      return NextResponse.json(
+        { success: false, error: "Invalid review" },
+        { status: 400 },
+      );
     }
 
-    if (role !== 'rider' && role !== 'driver') {
-      return NextResponse.json({ success: false, error: 'Invalid role' }, { status: 400 });
+    if (role !== "rider" && role !== "driver") {
+      return NextResponse.json(
+        { success: false, error: "Invalid role" },
+        { status: 400 },
+      );
     }
 
     // Authenticate user
     const token = request.cookies.get("auth_token")?.value;
     if (!token) {
-      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json(
+        { success: false, error: "Unauthorized" },
+        { status: 401 },
+      );
     }
 
     let userId;
@@ -44,48 +55,68 @@ export async function POST(request, { params }) {
       const { payload } = await jwtVerify(token, getJwtSecretKey());
       userId = payload.userId;
     } catch (err) {
-      return NextResponse.json({ success: false, error: "Invalid token" }, { status: 401 });
+      return NextResponse.json(
+        { success: false, error: "Invalid token" },
+        { status: 401 },
+      );
     }
 
     // Check for emergency contact
     const contact = await EmergencyContact.findOne({ userId });
     if (!contact) {
-      return NextResponse.json({ 
-        success: false, 
-        error: "Please save an emergency contact before submitting a rating." 
-      }, { status: 400 });
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Please save an emergency contact before submitting a rating.",
+        },
+        { status: 400 },
+      );
     }
 
     // Find the ride
     const ride = await Ride.findById(id);
     if (!ride) {
-      return NextResponse.json({ success: false, error: "Ride not found" }, { status: 404 });
+      return NextResponse.json(
+        { success: false, error: "Ride not found" },
+        { status: 404 },
+      );
     }
 
-    if (ride.status !== 'completed') {
-      return NextResponse.json({ success: false, error: 'You can only rate completed rides' }, { status: 400 });
+    if (ride.status !== "completed") {
+      return NextResponse.json(
+        { success: false, error: "You can only rate completed rides" },
+        { status: 400 },
+      );
     }
 
     // Block already-flagged users from submitting ratings.
     const reviewer = await User.findById(userId);
     if (reviewer?.isFlagged) {
-      return NextResponse.json({ success: false, error: 'Your account is flagged for fraudulent reviews.' }, { status: 403 });
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Your account is flagged for fraudulent reviews.",
+        },
+        { status: 403 },
+      );
     }
 
     const isPassenger = Array.isArray(ride.passengers)
-      ? ride.passengers.some((passengerId) => passengerId?.toString() === userId)
+      ? ride.passengers.some(
+          (passengerId) => passengerId?.toString() === userId,
+        )
       : false;
 
     // Fraud Detection Logic
     // Check recent ratings actually submitted by this user via review logs.
     const previousLogs = await ReviewLog.find({
       userId,
-      action: 'RATING_SUBMITTED',
+      action: "RATING_SUBMITTED",
       rating: { $gte: 1, $lte: 5 },
     })
       .sort({ createdAt: -1 })
       .limit(FRAUD_REPEAT_THRESHOLD - 1)
-      .select('rating');
+      .select("rating");
 
     const previousRatings = previousLogs.map((entry) => entry.rating);
     const repeatedPattern =
@@ -95,12 +126,12 @@ export async function POST(request, { params }) {
     if (repeatedPattern) {
       await User.findByIdAndUpdate(userId, {
         trustScore: 0,
-        isFlagged: true
+        isFlagged: true,
       });
 
       await ReviewLog.create({
         userId,
-        action: 'FRAUD_DETECTED',
+        action: "FRAUD_DETECTED",
         details: `Repeated identical ratings detected (${FRAUD_REPEAT_THRESHOLD} times in a row).`,
         rating: numericRating,
         rideId: ride._id,
@@ -108,46 +139,65 @@ export async function POST(request, { params }) {
         isFraudulent: true,
       });
 
-      return NextResponse.json({ 
-        success: false, 
-        error: "Fraudulent activity detected. Your Trust Score has been reset." 
-      }, { status: 400 });
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "Fraudulent activity detected. Your Trust Score has been reset.",
+        },
+        { status: 400 },
+      );
     }
 
     let targetUserId;
-    if (role === 'rider') {
+    if (role === "rider") {
       // User is rating the driver
       if (!isPassenger) {
-        return NextResponse.json({ success: false, error: "You were not a passenger on this ride" }, { status: 403 });
+        return NextResponse.json(
+          { success: false, error: "You were not a passenger on this ride" },
+          { status: 403 },
+        );
       }
       if (ride.driverRating) {
-        return NextResponse.json({ success: false, error: "You have already rated this driver" }, { status: 400 });
+        return NextResponse.json(
+          { success: false, error: "You have already rated this driver" },
+          { status: 400 },
+        );
       }
       ride.driverRating = numericRating;
-      ride.driverReview = (review || '').trim();
+      ride.driverReview = (review || "").trim();
       ride.driverId = ride.creator;
       targetUserId = ride.creator;
-    } else if (role === 'driver') {
+    } else if (role === "driver") {
       // User is rating the rider
       if (ride.creator.toString() !== userId) {
-        return NextResponse.json({ success: false, error: "You were not the driver for this ride" }, { status: 403 });
+        return NextResponse.json(
+          { success: false, error: "You were not the driver for this ride" },
+          { status: 403 },
+        );
       }
       if (ride.riderRating) {
-        return NextResponse.json({ success: false, error: "You have already rated this rider" }, { status: 400 });
+        return NextResponse.json(
+          { success: false, error: "You have already rated this rider" },
+          { status: 400 },
+        );
       }
       if (!ride.passengers?.length) {
-        return NextResponse.json({ success: false, error: 'No rider found for this ride' }, { status: 400 });
+        return NextResponse.json(
+          { success: false, error: "No rider found for this ride" },
+          { status: 400 },
+        );
       }
       // Keep existing behavior: first passenger is the rated rider.
       targetUserId = ride.passengers[0];
       ride.riderRating = numericRating;
-      ride.riderReview = (review || '').trim();
+      ride.riderReview = (review || "").trim();
       ride.riderId = targetUserId;
     }
 
     // Compatibility fields requested for rating/review payload on Ride.
     ride.rating = numericRating;
-    ride.review = (review || '').trim();
+    ride.review = (review || "").trim();
 
     await ride.save();
 
@@ -155,13 +205,21 @@ export async function POST(request, { params }) {
     if (targetUserId) {
       const targetIdString = targetUserId.toString();
 
-      const receivedRides = role === 'rider'
-        ? await Ride.find({ creator: targetIdString, driverRating: { $gte: 1, $lte: 5 } }).select('driverRating')
-        : await Ride.find({ passengers: targetIdString, riderRating: { $gte: 1, $lte: 5 } }).select('riderRating');
+      const receivedRides =
+        role === "rider"
+          ? await Ride.find({
+              creator: targetIdString,
+              driverRating: { $gte: 1, $lte: 5 },
+            }).select("driverRating")
+          : await Ride.find({
+              passengers: targetIdString,
+              riderRating: { $gte: 1, $lte: 5 },
+            }).select("riderRating");
 
-      const ratingValues = role === 'rider'
-        ? receivedRides.map((entry) => entry.driverRating)
-        : receivedRides.map((entry) => entry.riderRating);
+      const ratingValues =
+        role === "rider"
+          ? receivedRides.map((entry) => entry.driverRating)
+          : receivedRides.map((entry) => entry.riderRating);
 
       const totalRatings = ratingValues.length;
       const average = totalRatings
@@ -182,24 +240,29 @@ export async function POST(request, { params }) {
         userId,
         targetUserId,
         rideId: ride._id,
-        action: 'RATING_SUBMITTED',
+        action: "RATING_SUBMITTED",
         details: `${role} submitted a rating for this ride.`,
         role,
         rating: numericRating,
       });
     }
 
-    return NextResponse.json({
-      success: true,
-      message: "Rating submitted successfully",
-      data: ride
-    }, { status: 200 });
-
+    return NextResponse.json(
+      {
+        success: true,
+        message: "Rating submitted successfully",
+        data: ride,
+      },
+      { status: 200 },
+    );
   } catch (error) {
     console.error("Rating error:", error);
-    return NextResponse.json({
-      success: false,
-      error: error.message
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        success: false,
+        error: error.message,
+      },
+      { status: 500 },
+    );
   }
 }

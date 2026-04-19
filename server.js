@@ -1,3 +1,7 @@
+import dotenv from "dotenv";
+import validateEnv from "./src/lib/env.js";
+dotenv.config({ path: ".env.local" });
+validateEnv();
 import { createServer } from "http";
 import { parse } from "url";
 import next from "next";

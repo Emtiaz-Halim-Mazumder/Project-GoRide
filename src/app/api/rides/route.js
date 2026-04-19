@@ -1,4 +1,4 @@
-import dbConnect from "@/lib/mongodb";
+import connectMongoDB from "@/lib/mongodb";
 import Ride from "@/models/Ride";
 import User from "@/models/User";
 import DriverDoc from "@/models/DriverDoc";
@@ -14,7 +14,7 @@ const getJwtSecretKey = () => {
 
 export async function GET(request) {
   try {
-    await dbConnect();
+    await connectMongoDB();
 
     const searchParams =
       request.nextUrl?.searchParams ?? new URL(request.url).searchParams;
@@ -89,7 +89,7 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    await dbConnect();
+    await connectMongoDB();
     const body = await request.json();
 
     // Map form data to Ride schema

@@ -208,7 +208,7 @@ export default function ChatPopup() {
       {/* Floating Button */}
       <button
         onClick={() => setOpen((o) => !o)}
-        className="fixed bottom-20 right-6 z-50 bg-green-600 hover:bg-green-700 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-2xl transition-all duration-200 hover:scale-110"
+        className="fixed bottom-28 right-6 z-[60] bg-green-600 hover:bg-green-700 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-2xl transition-all duration-200 hover:scale-110"
         title="GoRide Chat"
       >
         <span className="text-2xl">{open ? "✕" : "💬"}</span>
@@ -222,7 +222,7 @@ export default function ChatPopup() {
       {/* Chat Panel */}
       {open && (
         <div
-          className="fixed bottom-24 right-6 z-50 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden"
+          className="fixed bottom-32 right-6 z-[60] w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden"
           style={{ height: "520px" }}
         >
           {/* Header */}

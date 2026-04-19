@@ -1,8 +1,8 @@
-import dbConnect from '@/lib/mongodb';
-import EmergencyContact from '@/models/EmergencyContact';
-import SOS from '@/models/SOS';
-import { NextResponse } from 'next/server';
-import nodemailer from 'nodemailer';
+import connectMongoDB from "@/lib/mongodb";
+import EmergencyContact from "@/models/EmergencyContact";
+import SOS from "@/models/SOS";
+import { NextResponse } from "next/server";
+import nodemailer from "nodemailer";
 
 const emailServer = process.env.EMAIL_SERVER;
 const emailPort = process.env.EMAIL_PORT;
@@ -10,24 +10,26 @@ const emailUser = process.env.EMAIL_USER;
 const emailPass = process.env.EMAIL_PASS;
 
 // Check if Email is properly configured
-const isEmailConfigured = 
-  emailUser && 
-  emailPass && 
-  !emailUser.includes('your-email') && 
-  !emailPass.includes('your-app-password');
+const isEmailConfigured =
+  emailUser &&
+  emailPass &&
+  !emailUser.includes("your-email") &&
+  !emailPass.includes("your-app-password");
 
-export async function POST(req) {
-  await dbConnect();
-  try {
+export async function POST(req) {\n  await connectMongoDB();\n  try {
     const { latitude, longitude } = await req.json();
-    
+
     // 1. Fetch the emergency contact
     const contact = await EmergencyContact.findOne();
     if (!contact) {
-      return NextResponse.json({ 
-        success: false, 
-        error: 'No emergency contact found. Please set one up in the Emergency page first.' 
-      }, { status: 400 });
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "No emergency contact found. Please set one up in the Emergency page first.",
+        },
+        { status: 400 },
+      );
     }
 
     const googleMapsUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
@@ -47,8 +49,8 @@ export async function POST(req) {
         </p>
       </div>
     `;
-    
-    let status = 'Sent';
+
+    let status = "Sent";
     let errorMessage = null;
     let previewUrl = null;
     let transporter;
@@ -59,12 +61,12 @@ export async function POST(req) {
       transporter = nodemailer.createTransport({
         host: emailServer,
         port: parseInt(emailPort),
-        secure: emailPort === '465',
+        secure: emailPort === "465",
         auth: { user: emailUser, pass: emailPass },
       });
     } else {
       // Auto-Demo Mode (Ethereal Email - No signup required)
-      console.log('--- SOS AUTO-DEMO MODE ---');
+      console.log("--- SOS AUTO-DEMO MODE ---");
       const testAccount = await nodemailer.createTestAccount();
       transporter = nodemailer.createTransport({
         host: "smtp.ethereal.email",
@@ -72,13 +74,15 @@ export async function POST(req) {
         secure: false,
         auth: { user: testAccount.user, pass: testAccount.pass },
       });
-      status = 'Logged (Dev Mode)';
+      status = "Logged (Dev Mode)";
     }
 
     // 3. Send the Email
     try {
       const info = await transporter.sendMail({
-        from: isEmailConfigured ? `"GoRide SOS" <${emailUser}>` : '"GoRide Demo SOS" <sos@goride.test>',
+        from: isEmailConfigured
+          ? `"GoRide SOS" <${emailUser}>`
+          : '"GoRide Demo SOS" <sos@goride.test>',
         to: contact.email,
         subject: messageSubject,
         html: messageHtml,
@@ -90,8 +94,8 @@ export async function POST(req) {
         console.log(`SOS Test Email Sent! View here: ${previewUrl}`);
       }
     } catch (err) {
-      console.error('Email Delivery Failed:', err);
-      status = 'Failed';
+      console.error("Email Delivery Failed:", err);
+      status = "Failed";
       errorMessage = err.message;
     }
 
@@ -104,25 +108,30 @@ export async function POST(req) {
       contactEmail: contact.email,
       status,
       errorMessage,
-      previewUrl
+      previewUrl,
     });
 
     // 5. Return response
-    if (status === 'Failed') {
-      return NextResponse.json({ success: false, error: 'Email delivery failed: ' + errorMessage }, { status: 500 });
+    if (status === "Failed") {
+      return NextResponse.json(
+        { success: false, error: "Email delivery failed: " + errorMessage },
+        { status: 500 },
+      );
     }
 
-    return NextResponse.json({ 
-      success: true, 
-      message: isEmailConfigured 
-        ? '🚨 SOS EMAIL ALERT SENT! Your contact has been notified.' 
-        : '🚨 SOS Alert Simulated! Real email generated in Demo Mode.',
+    return NextResponse.json({
+      success: true,
+      message: isEmailConfigured
+        ? "🚨 SOS EMAIL ALERT SENT! Your contact has been notified."
+        : "🚨 SOS Alert Simulated! Real email generated in Demo Mode.",
       previewUrl: previewUrl, // Return the preview link to the frontend
-      data: savedSos
+      data: savedSos,
     });
-
   } catch (error) {
-    console.error('SOS System Error:', error);
-    return NextResponse.json({ success: false, error: 'Internal System Error: ' + error.message }, { status: 500 });
+    console.error("SOS System Error:", error);
+    return NextResponse.json(
+      { success: false, error: "Internal System Error: " + error.message },
+      { status: 500 },
+    );
   }
 }

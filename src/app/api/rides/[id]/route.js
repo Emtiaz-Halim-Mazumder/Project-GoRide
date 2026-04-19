@@ -1,10 +1,7 @@
-import dbConnect from '@/lib/mongodb';
-import Ride from '@/models/Ride';
+import connectMongoDB from "@/lib/mongodb";
+import Ride from "@/models/Ride";
 
-export async function GET(request, { params }) {
-  await dbConnect();
-
-  try {
+export async function GET(request, { params }) {\n  await connectMongoDB();\n\n  try {
     const { id } = await params;
     const ride = await Ride.findById(id);
 
@@ -12,9 +9,9 @@ export async function GET(request, { params }) {
       return Response.json(
         {
           success: false,
-          error: 'Ride not found',
+          error: "Ride not found",
         },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -23,7 +20,7 @@ export async function GET(request, { params }) {
         success: true,
         data: ride,
       },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
     return Response.json(
@@ -31,15 +28,12 @@ export async function GET(request, { params }) {
         success: false,
         error: error.message,
       },
-      { status: 400 }
+      { status: 400 },
     );
   }
 }
 
-export async function PUT(request, { params }) {
-  await dbConnect();
-
-  try {
+export async function PUT(request, { params }) {\n  await connectMongoDB();\n\n  try {
     const { id } = await params;
     const body = await request.json();
     const ride = await Ride.findByIdAndUpdate(id, body, {
@@ -51,9 +45,9 @@ export async function PUT(request, { params }) {
       return Response.json(
         {
           success: false,
-          error: 'Ride not found',
+          error: "Ride not found",
         },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -62,7 +56,7 @@ export async function PUT(request, { params }) {
         success: true,
         data: ride,
       },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
     return Response.json(
@@ -70,15 +64,12 @@ export async function PUT(request, { params }) {
         success: false,
         error: error.message,
       },
-      { status: 400 }
+      { status: 400 },
     );
   }
 }
 
-export async function DELETE(request, { params }) {
-  await dbConnect();
-
-  try {
+export async function DELETE(request, { params }) {\n  await connectMongoDB();\n\n  try {
     const { id } = await params;
     const ride = await Ride.findByIdAndDelete(id);
 
@@ -86,9 +77,9 @@ export async function DELETE(request, { params }) {
       return Response.json(
         {
           success: false,
-          error: 'Ride not found',
+          error: "Ride not found",
         },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -97,7 +88,7 @@ export async function DELETE(request, { params }) {
         success: true,
         data: {},
       },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
     return Response.json(
@@ -105,7 +96,7 @@ export async function DELETE(request, { params }) {
         success: false,
         error: error.message,
       },
-      { status: 400 }
+      { status: 400 },
     );
   }
 }
