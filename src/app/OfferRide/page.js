@@ -4,6 +4,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import Header from '@/components/Header';
 import Script from 'next/script';
 import Link from 'next/link';
+import Header from '@/Components/Header';
+import PreferencesModal from '@/Components/PreferencesModal';
+import { preferenceOptions, nameToOption } from '@/lib/preferenceOptions';
+import { departments, buildings } from '@/lib/campusOptions';
+
 
 const mapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
 const hasGoogleMapsKey = Boolean(mapsApiKey && mapsApiKey !== 'YOUR_GOOGLE_MAPS_API_KEY');
@@ -17,7 +22,13 @@ export default function GoRidePage() {
     startTime: '',
     endTime: '',
     vehicleType: '',
+    department: '',
+    buildingName: '',
   });
+
+  // preferences state and modal visibility
+  const [preferences, setPreferences] = useState([]);
+  const [showPrefsModal, setShowPrefsModal] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
@@ -65,7 +76,7 @@ export default function GoRidePage() {
   };
 
   const handlePreferences = () => {
-    alert('Preferences settings will open here');
+    setShowPrefsModal(true);
   };
 
   const initMap = () => {
@@ -164,7 +175,7 @@ export default function GoRidePage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ ...formData, preferences }),
       });
 
       const data = await response.json();
@@ -182,6 +193,8 @@ export default function GoRidePage() {
         startTime: '',
         endTime: '',
         vehicleType: '',
+        department: '',
+        buildingName: '',
       });
       if (directionsRenderer) {
         directionsRenderer.setDirections({ routes: [] });
@@ -327,6 +340,42 @@ export default function GoRidePage() {
                 <option value="Bike">Bike</option>
               </select>
             </div>
+            {/* Department & Building (optional – helps students find this ride) */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Department <span className="text-gray-400 font-normal">(optional)</span>
+                </label>
+                <select
+                  name="department"
+                  value={formData.department}
+                  onChange={handleInputChange}
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900 bg-white text-sm"
+                >
+                  <option value="">Select department</option>
+                  {departments.map((d) => (
+                    <option key={d.value} value={d.value}>{d.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Campus Building <span className="text-gray-400 font-normal">(optional)</span>
+                </label>
+                <select
+                  name="buildingName"
+                  value={formData.buildingName}
+                  onChange={handleInputChange}
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900 bg-white text-sm"
+                >
+                  <option value="">Select building</option>
+                  {buildings.map((b) => (
+                    <option key={b.value} value={b.value}>{b.label}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
 
             {/* Preferences and Calculate Fare buttons */}
             <div className="flex flex-wrap gap-3 pt-2">
@@ -359,6 +408,34 @@ export default function GoRidePage() {
                 {loading ? 'Submitting...' : 'Offer Ride'}
               </button>
             </div>
+            {/* preferences alert display as badges */}
+            {preferences.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-2">
+                {preferences.map((name) => {
+                  const opt = nameToOption[name];
+                  if (!opt) return null;
+                  const colorMap = {
+                    pink: 'bg-pink-100 text-pink-800',
+                    gray: 'bg-gray-100 text-gray-800',
+                    blue: 'bg-blue-100 text-blue-800',
+                    purple: 'bg-purple-100 text-purple-800',
+                    yellow: 'bg-yellow-100 text-yellow-800',
+                    orange: 'bg-orange-100 text-orange-800',
+                    cyan: 'bg-cyan-100 text-cyan-800',
+                    green: 'bg-green-100 text-green-800',
+                  };
+                  const clz = colorMap[opt.color] || colorMap.gray;
+                  return (
+                    <span
+                      key={name}
+                      className={`${clz} px-2 py-1 text-xs rounded-full`}
+                    >
+                      {opt.label}
+                    </span>
+                  );
+                })}
+              </div>
+            )}
           </form>
 
           {/* Map and Route Info */}

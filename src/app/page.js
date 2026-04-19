@@ -64,9 +64,12 @@ export default function Home() {
               Start Offering Rides
             </button>
           </Link>
-          <button className="border-2 border-green-600 text-green-600 hover:bg-green-50 font-bold py-3 px-8 rounded-lg text-lg transition">
-            Find a Ride
-          </button>
+          <Link href="/FindRide">
+            <button className="border-2 border-green-600 text-green-600 hover:bg-green-50 font-bold py-3 px-8 rounded-lg text-lg transition">
+              Find a Ride
+            </button>
+          </Link>
+          
         </div>
       </section>
 

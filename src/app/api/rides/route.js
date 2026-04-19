@@ -2,14 +2,42 @@ import dbConnect from '@/lib/mongodb';
 import Ride from '@/models/Ride';
 
 export async function GET(request) {
-  await dbConnect();
-
   try {
-    const rides = await Ride.find({}).sort({ createdAt: -1 });
+    await dbConnect();
+
+    const searchParams = request.nextUrl?.searchParams ?? new URL(request.url).searchParams;
+    const department  = searchParams.get('department');
+    const building    = searchParams.get('building');
+    const origin      = searchParams.get('origin');
+    const destination = searchParams.get('destination');
+    const date        = searchParams.get('date');
+    const vehicleType = searchParams.get('vehicleType');
+    const status      = searchParams.get('status');
+
+    const query = {};
+
+    if (department)  query.department  = department;
+    if (building)    query.buildingName = building;
+    if (vehicleType) query.vehicleType  = vehicleType;
+    if (status)      query.status       = status;
+
+    if (origin)      query.origin      = { $regex: origin.trim(),      $options: 'i' };
+    if (destination) query.destination = { $regex: destination.trim(), $options: 'i' };
+
+    if (date) {
+      const start = new Date(date);
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(date);
+      end.setHours(23, 59, 59, 999);
+      query.date = { $gte: start, $lte: end };
+    }
+
+    const rides = await Ride.find(query).sort({ createdAt: -1 });
     return Response.json(
       {
         success: true,
         data: rides,
+        total: rides.length,
       },
       { status: 200 }
     );
@@ -25,13 +53,12 @@ export async function GET(request) {
 }
 
 export async function POST(request) {
-  await dbConnect();
-
   try {
+    await dbConnect();
     const body = await request.json();
 
     // Map form data to Ride schema
-    const { origin, destination, date, availableSeats, startTime, endTime, vehicleType } = body;
+    const { origin, destination, date, availableSeats, startTime, endTime, vehicleType, preferences, department, buildingName } = body;
 
     // Validate required fields
     if (!origin || !destination || !date || !availableSeats || !startTime || !endTime || !vehicleType) {
@@ -61,6 +88,9 @@ export async function POST(request) {
       fare: 0, // To be calculated
       description: '',
       status: 'active',
+      preferences: Array.isArray(preferences) ? preferences : [],
+      department: department || '',
+      buildingName: buildingName || '',
     };
 
     const ride = await Ride.create(rideData);
