@@ -40,9 +40,25 @@ export default function Home() {
                 Dashboard
               </button>
             </Link>
+
+            <Link href="/emergency">
+              <button className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition">
+                SOS Support
+              </button>
+            </Link>
           </div>
         </div>
       </nav>
+
+      {/* Floating SOS Button */}
+      <Link href="/emergency">
+        <div className="fixed bottom-8 right-8 z-[100] group">
+          <div className="absolute -inset-2 bg-red-600 rounded-full blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+          <button className="relative bg-red-600 text-white w-16 h-16 rounded-full shadow-2xl flex items-center justify-center text-xl font-bold hover:bg-red-700 transform hover:scale-110 transition duration-200 border-4 border-white">
+            SOS
+          </button>
+        </div>
+      </Link>
 
       {/* Hero Section */}
       <section className="max-w-6xl mx-auto px-6 py-20 md:py-32 text-center">

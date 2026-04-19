@@ -11,7 +11,9 @@ import RouteMap from '@/components/RouteMap';
 
 
 const mapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
-const hasGoogleMapsKey = Boolean(mapsApiKey && mapsApiKey !== 'YOUR_GOOGLE_MAPS_API_KEY');
+const isLikelyGoogleMapsKey = (key) => /^AIza[0-9A-Za-z_-]{20,}$/.test(key);
+const hasGoogleMapsKey = isLikelyGoogleMapsKey(mapsApiKey);
+const hasInvalidGoogleMapsKey = Boolean(mapsApiKey) && !hasGoogleMapsKey;
 
 export default function GoRidePage() {
   const [formData, setFormData] = useState({
@@ -46,6 +48,11 @@ export default function GoRidePage() {
   const destinationInputRef = useRef(null);
 
   useEffect(() => {
+    if (hasInvalidGoogleMapsKey) {
+      setMessage('Google Maps key is invalid. Use a valid NEXT_PUBLIC_GOOGLE_MAPS_API_KEY in .env.local.');
+      return;
+    }
+
     if (!hasGoogleMapsKey) {
       setMessage('Google Maps is not configured. Add NEXT_PUBLIC_GOOGLE_MAPS_API_KEY in .env.local.');
     }

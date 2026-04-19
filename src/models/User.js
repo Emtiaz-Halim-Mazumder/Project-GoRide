@@ -48,6 +48,20 @@ const userSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    trustScore: {
+      type: Number,
+      default: 5.0,
+      min: 0,
+      max: 5,
+    },
+    totalRatings: {
+      type: Number,
+      default: 0,
+    },
+    isFlagged: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
