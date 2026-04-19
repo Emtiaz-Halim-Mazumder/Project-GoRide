@@ -2,9 +2,9 @@
 // No API keys required.
 
 const VEHICLE_RATES = {
-  Car: { base: 40, perKm: 18 },
-  Micro: { base: 40, perKm: 18 },
-  Bike: { base: 0, perKm: 5 },
+  Car: { base: 40, perKm: 40, perMin: 1 },
+  Micro: { base: 40, perKm: 40, perMin: 3 },
+  Bike: { base: 50, perKm: 15, perMin: 1 }, // Note: Assuming 15 taka per km for bike as it was missing in your prompt
 };
 
 const MAX_SEATS = { Car: 5, Micro: 5, Bike: 1 };
@@ -53,7 +53,7 @@ async function getRoute(origin, destination) {
 
   const route = data.routes[0];
   const distanceKm = parseFloat((route.distance / 1000).toFixed(1));
-  const durationMin = Math.round(route.duration / 60);
+  const durationMin = Math.round(distanceKm * 10); // 10 minutes per kilometer
   const geometry = route.geometry;
 
   let durationText;
@@ -65,14 +65,14 @@ async function getRoute(origin, destination) {
     durationText = `${durationMin} min`;
   }
 
-  return { distanceKm, durationText, geometry };
+  return { distanceKm, durationMin, durationText, geometry };
 }
 
-function computeFuelCosts(distanceKm) {
+function computeFuelCosts(distanceKm, durationMin) {
   const costs = {};
 
   for (const [vehicle, rates] of Object.entries(VEHICLE_RATES)) {
-    const total = Math.round(rates.base + (distanceKm * rates.perKm));
+    const total = Math.round(rates.base + (distanceKm * rates.perKm) + (durationMin * rates.perMin));
     const maxSeats = MAX_SEATS[vehicle];
     const perSeat = {};
 
@@ -110,10 +110,10 @@ export async function GET(request) {
     // In practice Nominatim handles this fine for 2 concurrent requests.
 
     // Step 2: Get driving route
-    const { distanceKm, durationText, geometry } = await getRoute(originGeo, destGeo);
+    const { distanceKm, durationMin, durationText, geometry } = await getRoute(originGeo, destGeo);
 
     // Step 3: Compute fuel costs
-    const fuelCosts = computeFuelCosts(distanceKm);
+    const fuelCosts = computeFuelCosts(distanceKm, durationMin);
 
     return Response.json({
       success: true,

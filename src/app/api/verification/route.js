@@ -46,7 +46,7 @@ export async function POST(req) {
         extractedFrontId = match[1];
       } else {
         const fallbackMatch = text.match(/\b\d{8}\b/);
-        if (fallbackMatch) extractedFrontId = fallbackMatch[0];
+         if (fallbackMatch) extractedFrontId = fallbackMatch[0];
       }
     } catch (e) {
       console.error("OCR Error:", e);

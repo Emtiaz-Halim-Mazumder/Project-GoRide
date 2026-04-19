@@ -123,6 +123,14 @@ export default function ProfilePage() {
                 <p className="text-sm text-gray-500 font-medium mb-1">Home Address</p>
                 <p className="text-lg text-gray-900 font-semibold">{user?.address}</p>
               </div>
+
+              <div className="bg-gradient-to-r from-green-50 to-emerald-100 p-4 rounded-xl border border-green-200">
+                <p className="text-sm text-green-800 font-bold mb-1 flex items-center gap-2">
+                  <span>🌿</span> GoRide Impact Points
+                </p>
+                <p className="text-2xl text-green-600 font-extrabold">{user?.impactPoints || 0} pts</p>
+                <p className="text-xs text-green-700 mt-1">Earned by saving CO₂ emissions!</p>
+              </div>
             </div>
             
             <div className="mt-10 p-4 bg-green-50 rounded-lg border border-green-100 flex items-start space-x-3">

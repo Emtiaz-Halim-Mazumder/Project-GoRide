@@ -80,12 +80,10 @@ export default function GoRidePage() {
 
       setFareData(data);
 
-      // Auto-fill the per-person fare
+      // Auto-fill the total fuel cost
       const vehicleCosts = data.fuelCosts[formData.vehicleType];
       if (vehicleCosts) {
-        const seats = formData.availableSeats;
-        const perPerson = vehicleCosts.perSeat[seats] || vehicleCosts.perSeat['1'];
-        setFormData(prev => ({ ...prev, fare: perPerson.toString() }));
+        setFormData(prev => ({ ...prev, fare: vehicleCosts.total.toString() }));
       }
     } catch (err) {
       setFareError(err.message);
@@ -117,12 +115,28 @@ export default function GoRidePage() {
       return;
     }
 
+    if (fareData && formData.vehicleType && fareData.fuelCosts[formData.vehicleType]) {
+      const suggestedTotalFare = fareData.fuelCosts[formData.vehicleType].total;
+      const minFare = Math.max(0, suggestedTotalFare - 30);
+      if (formData.fare !== '' && parseFloat(formData.fare) < minFare) {
+        setMessage(`Error: Minimum fare you can offer for this ride is ৳${minFare}`);
+        return;
+      }
+    }
+
     setLoading(true);
     setMessage('');
 
     try {
+      const totalFareInput = parseInt(formData.fare);
+      const seatsCount = parseInt(formData.availableSeats);
+      const perPersonFare = !isNaN(totalFareInput) && !isNaN(seatsCount) && seatsCount > 0 
+        ? Math.ceil(totalFareInput / seatsCount) 
+        : 0;
+
       const submitData = {
         ...formData,
+        fare: perPersonFare, // Save as per-person fare in the database
         preferences,
         ...(fareData && {
           distanceKm: fareData.distance_km,
@@ -144,26 +158,23 @@ export default function GoRidePage() {
         throw new Error(data.message || 'Failed to create ride');
       }
 
-      setMessage('Ride offered successfully!');
-      setFormData({
-        origin: '',
-        destination: '',
-        date: '',
-        availableSeats: '',
-        startTime: '',
-        endTime: '',
-        vehicleType: '',
-        fare: '',
-      });
-      setPreferences([]);
-      setFareData(null);
-      setFareError('');
+      setMessage('Ride offered successfully! Redirecting to impact dashboard...');
+      setTimeout(() => {
+        window.location.href = `/impact/${data.data._id}`;
+      }, 1000);
     } catch (error) {
       setMessage(`Error: ${error.message}`);
     } finally {
       setLoading(false);
     }
   };
+
+  const suggestedTotalFare = fareData && formData.vehicleType && fareData.fuelCosts[formData.vehicleType] 
+    ? fareData.fuelCosts[formData.vehicleType].total 
+    : 0;
+  const minFare = Math.max(0, suggestedTotalFare - 30);
+  const currentInputFare = parseFloat(formData.fare);
+  const isUnderPriced = !isNaN(currentInputFare) && currentInputFare < minFare;
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -372,7 +383,7 @@ export default function GoRidePage() {
                 )}
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Fare per person (editable)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Total Fuel Cost (Editable)</label>
                   <div className="flex items-center gap-2">
                     <span className="text-lg font-bold text-gray-600">৳</span>
                     <input
@@ -382,10 +393,16 @@ export default function GoRidePage() {
                       onChange={handleInputChange}
                       min="0"
                       placeholder="Adjust fare if needed"
-                      className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900 font-semibold"
+                      className={`flex-1 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 font-semibold ${
+                        isUnderPriced ? 'border-red-500 text-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-green-500 text-gray-900'
+                      }`}
                     />
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">You can adjust the suggested fare before submitting</p>
+                  {isUnderPriced ? (
+                    <p className="text-sm text-red-500 mt-1 font-medium">Minimum fare you can offer for this ride is ৳{minFare}</p>
+                  ) : (
+                    <p className="text-xs text-gray-500 mt-1">You can adjust the suggested fare before submitting</p>
+                  )}
                 </div>
               </div>
             )}

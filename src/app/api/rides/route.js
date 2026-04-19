@@ -89,6 +89,22 @@ export async function POST(request) {
 
     const ride = await Ride.create(rideData);
 
+    // Calculate and award impact points
+    if (rideData.creator && rideData.distanceKm && rideData.seats) {
+      const distance = rideData.distanceKm;
+      const passengers = rideData.seats;
+      const emission_solo = distance * 150 * passengers;
+      const emission_shared = (distance * 150) / passengers;
+      const reduced_emission = emission_solo - emission_shared;
+      const points = Math.floor(reduced_emission / 150);
+
+      if (points > 0) {
+        await User.findByIdAndUpdate(rideData.creator, {
+          $inc: { impactPoints: points }
+        });
+      }
+    }
+
     return Response.json(
       {
         success: true,
