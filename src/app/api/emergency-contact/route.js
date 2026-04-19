@@ -22,7 +22,6 @@ export async function POST(req) {
     if (contact) {
       contact.name = body.name;
       contact.phone = body.phone;
-      contact.email = body.email;
       await contact.save();
     } else {
       contact = await EmergencyContact.create(body);
