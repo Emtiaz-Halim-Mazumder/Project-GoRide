@@ -74,6 +74,16 @@ const rideSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User'
     }],
+    department: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    buildingName: {
+      type: String,
+      trim: true,
+      default: '',
+    },
     status: {
       type: String,
       enum: ['active', 'completed', 'cancelled'],
