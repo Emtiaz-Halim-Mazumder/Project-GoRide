@@ -59,6 +59,16 @@ const rideSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
+    department: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    buildingName: {
+      type: String,
+      trim: true,
+      default: '',
+    },
     status: {
       type: String,
       enum: ['active', 'completed', 'cancelled'],
