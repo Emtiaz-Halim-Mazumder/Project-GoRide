@@ -62,6 +62,7 @@ export default function ClassSchedulePage() {
         return;
       }
       console.error('Error fetching schedules:', error);
+      setMessage(`Error: ${error.message}`);
     }
   };
 

@@ -55,6 +55,35 @@ const rideSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    preferences: {
+      type: [String],
+      default: [],
+    },
+    distanceKm: {
+      type: Number,
+    },
+    duration: {
+      type: String,
+    },
+    creator: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: false, // Make it optional for backwards compatibility
+    },
+    passengers: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    }],
+    department: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    buildingName: {
+      type: String,
+      trim: true,
+      default: '',
+    },
     status: {
       type: String,
       enum: ['active', 'completed', 'cancelled'],
