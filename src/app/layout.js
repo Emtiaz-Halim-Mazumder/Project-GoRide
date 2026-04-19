@@ -1,6 +1,6 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import ChatPopup from "@/Components/ChatPopup";
+import ChatPopup from "@/components/ChatPopup";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

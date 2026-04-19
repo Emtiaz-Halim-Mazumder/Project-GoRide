@@ -1,36 +1,41 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import Header from '@/Components/Header';
-import { departments, buildings, departmentMap, buildingMap } from '@/lib/campusOptions';
+import React, { useState } from "react";
+import Header from "@/Components/Header";
+import {
+  departments,
+  buildings,
+  departmentMap,
+  buildingMap,
+} from "@/lib/campusOptions";
 
-const VEHICLE_TYPES = ['Car', 'Motorcycle', 'Bus', 'Van', 'Micro', 'Bike'];
+const VEHICLE_TYPES = ["Car", "Motorcycle", "Bus", "Van", "Micro", "Bike"];
 
 const STATUS_BADGE = {
-  waiting:    'bg-yellow-100 text-yellow-800',
-  active:     'bg-green-100 text-green-800',
-  'en-route': 'bg-blue-100 text-blue-800',
-  arrived:    'bg-purple-100 text-purple-800',
-  completed:  'bg-gray-100 text-gray-700',
-  cancelled:  'bg-red-100 text-red-800',
+  waiting: "bg-yellow-100 text-yellow-800",
+  active: "bg-green-100 text-green-800",
+  "en-route": "bg-blue-100 text-blue-800",
+  arrived: "bg-purple-100 text-purple-800",
+  completed: "bg-gray-100 text-gray-700",
+  cancelled: "bg-red-100 text-red-800",
 };
 
 const STATUS_LABELS = {
-  waiting:    'Waiting',
-  active:     'Active',
-  'en-route': 'En Route',
-  arrived:    'Arrived',
-  completed:  'Completed',
-  cancelled:  'Cancelled',
+  waiting: "Waiting",
+  active: "Active",
+  "en-route": "En Route",
+  arrived: "Arrived",
+  completed: "Completed",
+  cancelled: "Cancelled",
 };
 
 const emptyFilters = {
-  department: '',
-  building: '',
-  origin: '',
-  destination: '',
-  date: '',
-  vehicleType: '',
+  department: "",
+  building: "",
+  origin: "",
+  destination: "",
+  date: "",
+  vehicleType: "",
 };
 
 export default function FindRidePage() {
@@ -38,7 +43,7 @@ export default function FindRidePage() {
   const [rides, setRides] = useState([]);
   const [searched, setSearched] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -47,19 +52,19 @@ export default function FindRidePage() {
 
   const buildQueryString = (f) => {
     const params = new URLSearchParams();
-    if (f.department)  params.set('department',  f.department);
-    if (f.building)    params.set('building',     f.building);
-    if (f.origin)      params.set('origin',       f.origin);
-    if (f.destination) params.set('destination',  f.destination);
-    if (f.date)        params.set('date',         f.date);
-    if (f.vehicleType) params.set('vehicleType',  f.vehicleType);
+    if (f.department) params.set("department", f.department);
+    if (f.building) params.set("building", f.building);
+    if (f.origin) params.set("origin", f.origin);
+    if (f.destination) params.set("destination", f.destination);
+    if (f.date) params.set("date", f.date);
+    if (f.vehicleType) params.set("vehicleType", f.vehicleType);
     return params.toString();
   };
 
   const handleSearch = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
     try {
       const qs = buildQueryString(filters);
       const res = await fetch(`/api/rides?${qs}`);
@@ -70,10 +75,12 @@ export default function FindRidePage() {
       }
 
       const data = await res.json();
-      if (!data.success) throw new Error(data.error || 'Unknown error');
+      if (!data.success) throw new Error(data.error || "Unknown error");
 
       // Keep only active / waiting rides
-      const visible = data.data.filter((r) => r.status === 'active' || r.status === 'waiting');
+      const visible = data.data.filter(
+        (r) => r.status === "active" || r.status === "waiting",
+      );
       setRides(visible);
       setSearched(true);
     } catch (err) {
@@ -87,7 +94,7 @@ export default function FindRidePage() {
     setFilters(emptyFilters);
     setRides([]);
     setSearched(false);
-    setError('');
+    setError("");
   };
 
   const activeFilterCount = Object.values(filters).filter(Boolean).length;
@@ -98,7 +105,6 @@ export default function FindRidePage() {
 
       <div className="flex-1 flex flex-col items-center p-4">
         <div className="w-full max-w-4xl">
-
           {/* Page header */}
           <div className="bg-green-600 text-white py-5 px-6 rounded-t-xl">
             <h1 className="text-2xl font-bold">Find a Ride</h1>
@@ -110,7 +116,6 @@ export default function FindRidePage() {
           {/* Filter panel */}
           <div className="bg-white shadow-lg rounded-b-xl overflow-hidden">
             <form onSubmit={handleSearch} className="p-6 space-y-5">
-
               {/* Row 1 – Department + Building */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -125,7 +130,9 @@ export default function FindRidePage() {
                   >
                     <option value="">All Departments</option>
                     {departments.map((d) => (
-                      <option key={d.value} value={d.value}>{d.label}</option>
+                      <option key={d.value} value={d.value}>
+                        {d.label}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -142,7 +149,9 @@ export default function FindRidePage() {
                   >
                     <option value="">All Buildings</option>
                     {buildings.map((b) => (
-                      <option key={b.value} value={b.value}>{b.label}</option>
+                      <option key={b.value} value={b.value}>
+                        {b.label}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -206,7 +215,9 @@ export default function FindRidePage() {
                   >
                     <option value="">Any Vehicle</option>
                     {VEHICLE_TYPES.map((v) => (
-                      <option key={v} value={v}>{v}</option>
+                      <option key={v} value={v}>
+                        {v}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -217,12 +228,14 @@ export default function FindRidePage() {
                 <div className="flex flex-wrap gap-2">
                   {filters.department && (
                     <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
-                      Dept: {departmentMap[filters.department] || filters.department}
+                      Dept:{" "}
+                      {departmentMap[filters.department] || filters.department}
                     </span>
                   )}
                   {filters.building && (
                     <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
-                      Building: {buildingMap[filters.building] || filters.building}
+                      Building:{" "}
+                      {buildingMap[filters.building] || filters.building}
                     </span>
                   )}
                   {filters.origin && (
@@ -255,7 +268,7 @@ export default function FindRidePage() {
                   disabled={loading}
                   className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white font-medium py-2 px-6 rounded-lg transition text-sm"
                 >
-                  {loading ? 'Searching...' : 'Search Rides'}
+                  {loading ? "Searching..." : "Search Rides"}
                 </button>
                 {(activeFilterCount > 0 || searched) && (
                   <button
@@ -271,7 +284,9 @@ export default function FindRidePage() {
 
             {/* Error */}
             {error && (
-              <div className="mx-6 mb-4 p-3 bg-red-100 text-red-700 rounded-lg text-sm">{error}</div>
+              <div className="mx-6 mb-4 p-3 bg-red-100 text-red-700 rounded-lg text-sm">
+                {error}
+              </div>
             )}
 
             {/* Results */}
@@ -280,11 +295,13 @@ export default function FindRidePage() {
                 <div className="flex items-center justify-between py-4">
                   <h2 className="text-base font-semibold text-gray-800">
                     {rides.length === 0
-                      ? 'No rides found'
-                      : `${rides.length} ride${rides.length !== 1 ? 's' : ''} found`}
+                      ? "No rides found"
+                      : `${rides.length} ride${rides.length !== 1 ? "s" : ""} found`}
                   </h2>
                   {rides.length > 0 && (
-                    <span className="text-xs text-gray-500">Showing active & waiting rides</span>
+                    <span className="text-xs text-gray-500">
+                      Showing active & waiting rides
+                    </span>
                   )}
                 </div>
 
@@ -292,7 +309,9 @@ export default function FindRidePage() {
                   <div className="text-center py-10 text-gray-500">
                     <p className="text-4xl mb-3">🔍</p>
                     <p className="font-medium">No matching rides available</p>
-                    <p className="text-sm mt-1">Try adjusting your filters or clearing some criteria</p>
+                    <p className="text-sm mt-1">
+                      Try adjusting your filters or clearing some criteria
+                    </p>
                   </div>
                 ) : (
                   <div className="space-y-4">
@@ -307,9 +326,15 @@ export default function FindRidePage() {
             {/* Footer nav */}
             <div className="border-t border-gray-200 bg-gray-50 py-3 px-6">
               <div className="flex justify-center space-x-8 text-gray-700 font-medium text-sm">
-                <a href="/" className="hover:text-green-600">Home</a>
-                <a href="/OfferRide" className="hover:text-green-600">Offer Ride</a>
-                <a href="/Dashboard" className="hover:text-green-600">Dashboard</a>
+                <a href="/" className="hover:text-green-600">
+                  Home
+                </a>
+                <a href="/OfferRide" className="hover:text-green-600">
+                  Offer Ride
+                </a>
+                <a href="/Dashboard" className="hover:text-green-600">
+                  Dashboard
+                </a>
               </div>
             </div>
           </div>
@@ -329,11 +354,18 @@ function RideCard({ ride }) {
             {ride.origin} → {ride.destination}
           </h3>
           <p className="text-sm text-gray-500 mt-0.5">
-            {new Date(ride.date).toLocaleDateString('en-BD', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}
-            {ride.time ? ` · ${ride.time}` : ''}
+            {new Date(ride.date).toLocaleDateString("en-BD", {
+              weekday: "short",
+              year: "numeric",
+              month: "short",
+              day: "numeric",
+            })}
+            {ride.time ? ` · ${ride.time}` : ""}
           </p>
         </div>
-        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${STATUS_BADGE[ride.status] || 'bg-gray-100 text-gray-700'}`}>
+        <span
+          className={`px-3 py-1 rounded-full text-xs font-semibold ${STATUS_BADGE[ride.status] || "bg-gray-100 text-gray-700"}`}
+        >
           {STATUS_LABELS[ride.status] || ride.status}
         </span>
       </div>
@@ -370,12 +402,24 @@ function RideCard({ ride }) {
         </div>
         <div>
           <p className="text-gray-500 text-xs">Fare</p>
-          <p className="font-semibold text-gray-800">{ride.fare ? `৳${ride.fare}` : 'TBD'}</p>
+          <p className="font-semibold text-gray-800">
+            {ride.fare ? `৳${ride.fare}` : "TBD"}
+          </p>
         </div>
       </div>
 
+      {/* Docs indicator */}
+      <div className="mt-3 flex items-center gap-2">
+        <span className="text-xs text-gray-500">Driver Docs:</span>
+        <span
+          className={`text-xs font-semibold ${ride.hasApprovedDocs ? "text-green-600" : "text-red-600"}`}
+        >
+          {ride.hasApprovedDocs ? "✓ Approved" : "✗ Pending"}
+        </span>
+      </div>
+
       {/* Contact row */}
-      {ride.driverPhone && ride.driverPhone !== 'TBD' && (
+      {ride.driverPhone && ride.driverPhone !== "TBD" && (
         <div className="mt-3 pt-3 border-t border-gray-100 flex items-center gap-2">
           <span className="text-xs text-gray-500">Contact driver:</span>
           <a

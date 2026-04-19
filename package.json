@@ -2,6 +2,7 @@
   "name": "my-app",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "node server.js",
     "build": "next build",
@@ -10,6 +11,7 @@
   "dependencies": {
     "@zxing/library": "^0.21.3",
     "bcryptjs": "^3.0.3",
+    "dotenv": "^17.4.2",
     "jose": "^6.2.2",
     "leaflet": "^1.9.4",
     "leaflet-routing-machine": "^3.2.12",
@@ -20,8 +22,8 @@
     "react-dom": "19.2.3",
     "react-leaflet": "^5.0.0",
     "sharp": "^0.34.5",
-    "socket.io": "^4.8.1",
-    "socket.io-client": "^4.8.1",
+    "socket.io": "^4.8.3",
+    "socket.io-client": "^4.8.3",
     "tesseract.js": "^7.0.0"
   },
   "devDependencies": {

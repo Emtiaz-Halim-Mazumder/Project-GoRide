@@ -1,11 +1,14 @@
-import dbConnect from '@/lib/mongodb';
-import Ride from '@/models/Ride';
-import User from '@/models/User';
+import dbConnect from "@/lib/mongodb";
+import Ride from "@/models/Ride";
+import User from "@/models/User";
+import DriverDoc from "@/models/DriverDoc";
 import { jwtVerify } from "jose";
 import { cookies } from "next/headers";
 
 const getJwtSecretKey = () => {
-  const secret = process.env.JWT_SECRET || "fallback_default_secret_please_change_in_production";
+  const secret =
+    process.env.JWT_SECRET ||
+    "fallback_default_secret_please_change_in_production";
   return new TextEncoder().encode(secret);
 };
 
@@ -13,24 +16,26 @@ export async function GET(request) {
   try {
     await dbConnect();
 
-    const searchParams = request.nextUrl?.searchParams ?? new URL(request.url).searchParams;
-    const department  = searchParams.get('department');
-    const building    = searchParams.get('building');
-    const origin      = searchParams.get('origin');
-    const destination = searchParams.get('destination');
-    const date        = searchParams.get('date');
-    const vehicleType = searchParams.get('vehicleType');
-    const status      = searchParams.get('status');
+    const searchParams =
+      request.nextUrl?.searchParams ?? new URL(request.url).searchParams;
+    const department = searchParams.get("department");
+    const building = searchParams.get("building");
+    const origin = searchParams.get("origin");
+    const destination = searchParams.get("destination");
+    const date = searchParams.get("date");
+    const vehicleType = searchParams.get("vehicleType");
+    const status = searchParams.get("status");
 
     const query = {};
 
-    if (department)  query.department  = department;
-    if (building)    query.buildingName = building;
-    if (vehicleType) query.vehicleType  = vehicleType;
-    if (status)      query.status       = status;
+    if (department) query.department = department;
+    if (building) query.buildingName = building;
+    if (vehicleType) query.vehicleType = vehicleType;
+    if (status) query.status = status;
 
-    if (origin)      query.origin      = { $regex: origin.trim(),      $options: 'i' };
-    if (destination) query.destination = { $regex: destination.trim(), $options: 'i' };
+    if (origin) query.origin = { $regex: origin.trim(), $options: "i" };
+    if (destination)
+      query.destination = { $regex: destination.trim(), $options: "i" };
 
     if (date) {
       const start = new Date(date);
@@ -40,14 +45,36 @@ export async function GET(request) {
       query.date = { $gte: start, $lte: end };
     }
 
-    const rides = await Ride.find(query).populate('creator', 'name department phone').sort({ createdAt: -1 });
+    const rides = await Ride.find(query)
+      .populate("creator", "name department phone email")
+      .sort({ createdAt: -1 });
+
+    // Get unique creator emails
+    const creatorEmails = [
+      ...new Set(rides.map((ride) => ride.creator?.email).filter(Boolean)),
+    ];
+
+    // Check which creators have approved driver docs
+    const approvedDocs = await DriverDoc.find({
+      email: { $in: creatorEmails },
+      status: "approved",
+    }).select("email");
+
+    const approvedEmails = new Set(approvedDocs.map((doc) => doc.email));
+
+    // Add hasApprovedDocs to each ride
+    const ridesWithDocs = rides.map((ride) => ({
+      ...ride.toObject(),
+      hasApprovedDocs: approvedEmails.has(ride.creator?.email),
+    }));
+
     return Response.json(
       {
         success: true,
-        data: rides,
-        total: rides.length,
+        data: ridesWithDocs,
+        total: ridesWithDocs.length,
       },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
     return Response.json(
@@ -55,7 +82,7 @@ export async function GET(request) {
         success: false,
         error: error.message,
       },
-      { status: 400 }
+      { status: 400 },
     );
   }
 }
@@ -66,16 +93,38 @@ export async function POST(request) {
     const body = await request.json();
 
     // Map form data to Ride schema
-    const { origin, destination, date, availableSeats, startTime, endTime, vehicleType, preferences, fare, distanceKm, duration, department, buildingName } = body;
+    const {
+      origin,
+      destination,
+      date,
+      availableSeats,
+      startTime,
+      endTime,
+      vehicleType,
+      preferences,
+      fare,
+      distanceKm,
+      duration,
+      department,
+      buildingName,
+    } = body;
 
     // Validate required fields
-    if (!origin || !destination || !date || !availableSeats || !startTime || !endTime || !vehicleType) {
+    if (
+      !origin ||
+      !destination ||
+      !date ||
+      !availableSeats ||
+      !startTime ||
+      !endTime ||
+      !vehicleType
+    ) {
       return Response.json(
         {
           success: false,
-          error: 'Please fill in all required fields',
+          error: "Please fill in all required fields",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -90,17 +139,17 @@ export async function POST(request) {
       time: timeString,
       seats: parseInt(availableSeats),
       vehicleType: vehicleType,
-      vehicleNumber: 'TBD', // To be updated by user
-      driverName: 'TBD', // To be updated by user
-      driverPhone: 'TBD', // To be updated by user
+      vehicleNumber: "TBD", // To be updated by user
+      driverName: "TBD", // To be updated by user
+      driverPhone: "TBD", // To be updated by user
       fare: fare ? parseInt(fare) : 0,
-      description: '',
-      status: 'active',
+      description: "",
+      status: "active",
       preferences: Array.isArray(preferences) ? preferences : [],
       ...(distanceKm && { distanceKm: parseFloat(distanceKm) }),
       ...(duration && { duration }),
-      department: department || '',
-      buildingName: buildingName || '',
+      department: department || "",
+      buildingName: buildingName || "",
     };
 
     const cookieStore = await cookies();
@@ -129,7 +178,7 @@ export async function POST(request) {
 
       if (points > 0) {
         await User.findByIdAndUpdate(rideData.creator, {
-          $inc: { impactPoints: points }
+          $inc: { impactPoints: points },
         });
       }
     }
@@ -137,10 +186,10 @@ export async function POST(request) {
     return Response.json(
       {
         success: true,
-        message: 'Ride offered successfully!',
+        message: "Ride offered successfully!",
         data: ride,
       },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
     return Response.json(
@@ -148,7 +197,7 @@ export async function POST(request) {
         success: false,
         error: error.message,
       },
-      { status: 400 }
+      { status: 400 },
     );
   }
 }
