@@ -2,7 +2,10 @@ import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/mongodb";
 import DriverDoc from "@/models/DriverDoc";
 
-export async function GET(req) {\n  try {\n    await connectMongoDB();\n    const { searchParams } = new URL(req.url);
+export async function GET(req) {
+  try {
+    await connectMongoDB();
+    const { searchParams } = new URL(req.url);
     const email = searchParams.get("email");
 
     const query = {};
@@ -18,7 +21,10 @@ export async function GET(req) {\n  try {\n    await connectMongoDB();\n    cons
   }
 }
 
-export async function POST(req) {\n  try {\n    await connectMongoDB();\n    const data = await req.formData();
+export async function POST(req) {
+  try {
+    await connectMongoDB();
+    const data = await req.formData();
 
     const driverName = data.get("driverName");
     const email = data.get("email");

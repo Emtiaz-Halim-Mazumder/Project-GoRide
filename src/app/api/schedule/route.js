@@ -3,7 +3,9 @@ import Schedule from "@/models/Schedule";
 import { NextResponse } from "next/server";
 
 export async function GET() {
-  try {\n    await connectMongoDB();\n    const schedules = await Schedule.find({});
+  try {
+    await connectMongoDB();
+    const schedules = await Schedule.find({});
     return NextResponse.json({ success: true, data: schedules });
   } catch (error) {
     return NextResponse.json(
@@ -14,7 +16,9 @@ export async function GET() {
 }
 
 export async function POST(req) {
-  try {\n    await connectMongoDB();\n    const body = await req.json();
+  try {
+    await connectMongoDB();
+    const body = await req.json();
     console.log("Schedule POST body:", body);
 
     const schedule = await Schedule.create(body);
@@ -35,7 +39,9 @@ export async function POST(req) {
 }
 
 export async function PUT(req) {
-  try {\n    await connectMongoDB();\n    const body = await req.json();
+  try {
+    await connectMongoDB();
+    const body = await req.json();
     const { id, autoRide, recurring } = body;
     const updateData = {};
     if (autoRide !== undefined) updateData.autoRide = autoRide;

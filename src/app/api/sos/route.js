@@ -16,7 +16,9 @@ const isEmailConfigured =
   !emailUser.includes("your-email") &&
   !emailPass.includes("your-app-password");
 
-export async function POST(req) {\n  await connectMongoDB();\n  try {
+export async function POST(req) {
+  await connectMongoDB();
+  try {
     const { latitude, longitude } = await req.json();
 
     // 1. Fetch the emergency contact
@@ -58,7 +60,7 @@ export async function POST(req) {\n  await connectMongoDB();\n  try {
     // 2. Configure Transporter
     if (isEmailConfigured) {
       // Production Mode (Real SMTP)
-      transporter = nodemailer.createTransport({
+      transporter = nodemailer.createTransporter({
         host: emailServer,
         port: parseInt(emailPort),
         secure: emailPort === "465",
@@ -124,7 +126,7 @@ export async function POST(req) {\n  await connectMongoDB();\n  try {
       message: isEmailConfigured
         ? "🚨 SOS EMAIL ALERT SENT! Your contact has been notified."
         : "🚨 SOS Alert Simulated! Real email generated in Demo Mode.",
-      previewUrl: previewUrl, // Return the preview link to the frontend
+      previewUrl: previewUrl,
       data: savedSos,
     });
   } catch (error) {

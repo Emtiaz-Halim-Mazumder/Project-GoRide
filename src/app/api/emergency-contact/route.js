@@ -10,7 +10,9 @@ const getJwtSecretKey = () => {
   return new TextEncoder().encode(secret);
 };
 
-export async function GET(request) {\n  await connectMongoDB();\n  try {
+export async function GET(request) {
+  await connectMongoDB();
+  try {
     const token = request.cookies.get("auth_token")?.value;
     if (!token)
       return NextResponse.json(
@@ -33,7 +35,9 @@ export async function GET(request) {\n  await connectMongoDB();\n  try {
   }
 }
 
-export async function POST(req) {\n  await connectMongoDB();\n  try {
+export async function POST(req) {
+  await connectMongoDB();
+  try {
     const token = req.cookies.get("auth_token")?.value;
     if (!token)
       return NextResponse.json(
