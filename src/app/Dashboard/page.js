@@ -1,11 +1,14 @@
 "use client";
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 import Header from '@/Components/Header';
+=======
+>>>>>>> 62b307b280f9c4cf930c968df62c234333feaf0e
 import React, { useState, useEffect, useRef } from 'react';
-import PreferencesModal from '@/Components/PreferencesModal';
 import { nameToOption } from '@/lib/preferenceOptions';
 import { io } from 'socket.io-client';
+<<<<<<< HEAD
 =======
 import Header from "@/components/Header";
 import React, { useState, useEffect, useRef } from "react";
@@ -14,6 +17,8 @@ import PreferencesModal from "@/components/PreferencesModal";
 import { nameToOption } from "@/lib/preferenceOptions";
 import { io } from "socket.io-client";
 >>>>>>> eabe9ef568161056c02fa8517def6f4ff7d36ed7
+=======
+>>>>>>> 62b307b280f9c4cf930c968df62c234333feaf0e
 
 let socketInstance = null;
 function getSocket() {
@@ -102,11 +107,14 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
 <<<<<<< HEAD
   const [message, setMessage] = useState('');
+<<<<<<< HEAD
 =======
   const [message, setMessage] = useState("");
   const [user, setUser] = useState(null);
   const [activeTab, setActiveTab] = useState("myRides");
 >>>>>>> eabe9ef568161056c02fa8517def6f4ff7d36ed7
+=======
+>>>>>>> 62b307b280f9c4cf930c968df62c234333feaf0e
   const [filterPrefs, setFilterPrefs] = useState([]);
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -137,6 +145,7 @@ export default function DashboardPage() {
   const ridesToShow = filterPrefs.length > 0
     ? rides.filter((r) => Array.isArray(r.preferences) && filterPrefs.every((p) => r.preferences.includes(p)))
     : rides;
+<<<<<<< HEAD
 =======
   const [autoProgressTimers, setAutoProgressTimers] = useState({});
 
@@ -208,17 +217,23 @@ export default function DashboardPage() {
             filterPrefs.every((p) => r.preferences.includes(p)),
         )
       : currentRides;
+=======
+>>>>>>> 62b307b280f9c4cf930c968df62c234333feaf0e
 
   const fetchProfileAndRides = async () => {
     setLoading(true);
     try {
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 62b307b280f9c4cf930c968df62c234333feaf0e
       const res = await fetch('/api/rides');
       const data = await res.json();
       if (data.success) setRides(data.data);
       else setMessage(`Error: ${data.error}`);
     } catch (err) {
       setMessage(`Error: ${err.message}`);
+<<<<<<< HEAD
 =======
       const [profileRes, ridesRes] = await Promise.all([
         fetch("/api/auth/me"),
@@ -257,6 +272,10 @@ export default function DashboardPage() {
       }
     } catch (error) {
       setMessage(`Error accepting ride: ${error.message}`);
+=======
+    } finally {
+      setLoading(false);
+>>>>>>> 62b307b280f9c4cf930c968df62c234333feaf0e
     }
   };
 
@@ -494,6 +513,7 @@ export default function DashboardPage() {
       if (data.success) { setMessage('Ride deleted!'); fetchRides(); }
       else setMessage(`Error: ${data.error}`);
     } catch (err) { setMessage(`Error: ${err.message}`); }
+<<<<<<< HEAD
 =======
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -525,6 +545,8 @@ export default function DashboardPage() {
       setMessage(`Error: ${err.message}`);
     }
 >>>>>>> eabe9ef568161056c02fa8517def6f4ff7d36ed7
+=======
+>>>>>>> 62b307b280f9c4cf930c968df62c234333feaf0e
   };
 
   const handleCancel = () => {
@@ -613,6 +635,9 @@ export default function DashboardPage() {
       <Header />
       <div className="flex-1 flex flex-col items-center p-4">
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 62b307b280f9c4cf930c968df62c234333feaf0e
         <div className="w-full max-w-5xl bg-white shadow-lg rounded-xl overflow-hidden">
           {/* Header */}
           <div className="bg-green-600 text-white py-4 px-6 flex items-center justify-between">
@@ -833,6 +858,7 @@ export default function DashboardPage() {
               <a href="/OfferRide" className="cursor-pointer hover:text-green-600">Offer Ride</a>
               <a href="/DriverDocs" className="cursor-pointer hover:text-green-600">Driver Docs</a>
             </div>
+<<<<<<< HEAD
 =======
         {/* Main card */}
         <div className="w-full max-w-5xl bg-white shadow-lg rounded-xl overflow-hidden">
@@ -1614,6 +1640,8 @@ export default function DashboardPage() {
               </a>
             </div>
 >>>>>>> eabe9ef568161056c02fa8517def6f4ff7d36ed7
+=======
+>>>>>>> 62b307b280f9c4cf930c968df62c234333feaf0e
           </div>
         </div>
       </div>
