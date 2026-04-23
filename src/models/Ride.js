@@ -33,7 +33,7 @@ const rideSchema = new mongoose.Schema(
     },
     vehicleType: {
       type: String,
-      enum: ['Car', 'Motorcycle', 'Bus', 'Van', 'Micro','Bike'],
+      enum: ['Car', 'Motorcycle', 'Bus', 'Van', 'Micro', 'Bike'],
       required: [true, 'Please add vehicle type'],
     },
     vehicleNumber: {
@@ -76,7 +76,8 @@ const rideSchema = new mongoose.Schema(
     }],
     status: {
       type: String,
-      enum: ['active', 'completed', 'cancelled'],
+      // waiting → active → en-route → arrived → completed
+      enum: ['waiting', 'active', 'en-route', 'arrived', 'completed', 'cancelled'],
       default: 'active',
     },
   },
