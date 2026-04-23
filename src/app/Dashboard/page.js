@@ -1,66 +1,25 @@
 "use client";
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-import Header from '@/Components/Header';
-=======
->>>>>>> 62b307b280f9c4cf930c968df62c234333feaf0e
-import React, { useState, useEffect, useRef } from 'react';
-import { nameToOption } from '@/lib/preferenceOptions';
-import { io } from 'socket.io-client';
-<<<<<<< HEAD
-=======
 import Header from "@/components/Header";
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import PreferencesModal from "@/components/PreferencesModal";
 import { nameToOption } from "@/lib/preferenceOptions";
 import { io } from "socket.io-client";
->>>>>>> eabe9ef568161056c02fa8517def6f4ff7d36ed7
-=======
->>>>>>> 62b307b280f9c4cf930c968df62c234333feaf0e
 
 let socketInstance = null;
 function getSocket() {
   if (!socketInstance) {
-<<<<<<< HEAD
-    socketInstance = io({ path: '/socket.io', transports: ['websocket', 'polling'] });
-=======
     socketInstance = io({
       path: "/socket.io",
       transports: ["websocket", "polling"],
     });
->>>>>>> eabe9ef568161056c02fa8517def6f4ff7d36ed7
   }
   return socketInstance;
 }
 
 // Status flow: waiting → active → en-route → arrived → completed
 const STATUS_FLOW = {
-<<<<<<< HEAD
-  waiting:   { next: 'active',    label: '▶ Start Accepting', color: 'bg-green-600 hover:bg-green-700' },
-  active:    { next: 'en-route',  label: '🚗 Start Ride',     color: 'bg-blue-600 hover:bg-blue-700' },
-  'en-route':{ next: 'arrived',   label: '📍 Mark Arrived',   color: 'bg-purple-600 hover:bg-purple-700' },
-  arrived:   { next: 'completed', label: '✅ Complete Ride',  color: 'bg-gray-600 hover:bg-gray-700' },
-};
-
-const STATUS_BADGE = {
-  waiting:    'bg-yellow-100 text-yellow-800',
-  active:     'bg-green-100 text-green-800',
-  'en-route': 'bg-blue-100 text-blue-800',
-  arrived:    'bg-purple-100 text-purple-800',
-  completed:  'bg-gray-100 text-gray-700',
-  cancelled:  'bg-red-100 text-red-800',
-};
-
-const STATUS_LABELS = {
-  waiting:    'Waiting',
-  active:     'Active',
-  'en-route': 'En Route 🚗',
-  arrived:    'Arrived at Campus 🎓',
-  completed:  'Completed',
-  cancelled:  'Cancelled',
-=======
   waiting: {
     next: "active",
     label: "▶ Start Accepting",
@@ -99,54 +58,18 @@ const STATUS_LABELS = {
   arrived: "Arrived at Campus 🎓",
   completed: "Completed",
   cancelled: "Cancelled",
->>>>>>> eabe9ef568161056c02fa8517def6f4ff7d36ed7
 };
 
 export default function DashboardPage() {
   const [rides, setRides] = useState([]);
   const [loading, setLoading] = useState(true);
-<<<<<<< HEAD
-  const [message, setMessage] = useState('');
-<<<<<<< HEAD
-=======
   const [message, setMessage] = useState("");
   const [user, setUser] = useState(null);
   const [activeTab, setActiveTab] = useState("myRides");
->>>>>>> eabe9ef568161056c02fa8517def6f4ff7d36ed7
-=======
->>>>>>> 62b307b280f9c4cf930c968df62c234333feaf0e
   const [filterPrefs, setFilterPrefs] = useState([]);
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [statusUpdating, setStatusUpdating] = useState(null);
-<<<<<<< HEAD
-  const [editFormData, setEditFormData] = useState({
-    origin: '', destination: '', date: '', availableSeats: '',
-    startTime: '', endTime: '', vehicleType: '', vehicleNumber: '',
-    driverName: '', driverPhone: '', fare: '', description: '', status: '',
-  });
-  const socketRef = useRef(null);
-
-  const toggleFilterPref = (pref) =>
-    setFilterPrefs((prev) => prev.includes(pref) ? prev.filter((p) => p !== pref) : [...prev, pref]);
-
-  useEffect(() => {
-    fetchRides();
-
-    // Listen for real-time status updates
-    const socket = getSocket();
-    socketRef.current = socket;
-    socket.on('ride-status-changed', ({ rideId, status }) => {
-      setRides((prev) => prev.map((r) => r._id === rideId ? { ...r, status } : r));
-    });
-    return () => socket.off('ride-status-changed');
-  }, []);
-
-  const ridesToShow = filterPrefs.length > 0
-    ? rides.filter((r) => Array.isArray(r.preferences) && filterPrefs.every((p) => r.preferences.includes(p)))
-    : rides;
-<<<<<<< HEAD
-=======
   const [autoProgressTimers, setAutoProgressTimers] = useState({});
 
   // Rating state
@@ -198,7 +121,6 @@ export default function DashboardPage() {
       Object.values(autoProgressTimers).forEach((timer) => clearTimeout(timer));
     };
   }, [autoProgressTimers]);
->>>>>>> eabe9ef568161056c02fa8517def6f4ff7d36ed7
 
   const myRides = rides.filter(
     (r) =>
@@ -217,24 +139,10 @@ export default function DashboardPage() {
             filterPrefs.every((p) => r.preferences.includes(p)),
         )
       : currentRides;
-=======
->>>>>>> 62b307b280f9c4cf930c968df62c234333feaf0e
 
   const fetchProfileAndRides = async () => {
     setLoading(true);
     try {
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 62b307b280f9c4cf930c968df62c234333feaf0e
-      const res = await fetch('/api/rides');
-      const data = await res.json();
-      if (data.success) setRides(data.data);
-      else setMessage(`Error: ${data.error}`);
-    } catch (err) {
-      setMessage(`Error: ${err.message}`);
-<<<<<<< HEAD
-=======
       const [profileRes, ridesRes] = await Promise.all([
         fetch("/api/auth/me"),
         fetch("/api/rides"),
@@ -252,86 +160,63 @@ export default function DashboardPage() {
       }
     } catch (error) {
       setMessage(`Error fetching data: ${error.message}`);
->>>>>>> eabe9ef568161056c02fa8517def6f4ff7d36ed7
     } finally {
       setLoading(false);
     }
   };
 
-<<<<<<< HEAD
-=======
-  const handleAcceptRide = async (id) => {
+  // Handle Accept Ride
+  const handleAcceptRide = async (rideId) => {
     try {
-      const res = await fetch(`/api/rides/${id}/accept`, { method: "POST" });
+      const res = await fetch(`/api/rides/${rideId}/accept`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
       const data = await res.json();
       if (data.success) {
         setMessage("Ride accepted successfully!");
         fetchProfileAndRides();
+        setTimeout(() => setMessage(""), 3000);
       } else {
         setMessage(`Error: ${data.error}`);
       }
-    } catch (error) {
-      setMessage(`Error accepting ride: ${error.message}`);
-=======
-    } finally {
-      setLoading(false);
->>>>>>> 62b307b280f9c4cf930c968df62c234333feaf0e
+    } catch (err) {
+      setMessage(`Error: ${err.message}`);
     }
   };
 
->>>>>>> eabe9ef568161056c02fa8517def6f4ff7d36ed7
   // Ride Status Automation
   const handleStatusAdvance = async (ride) => {
     const flow = STATUS_FLOW[ride.status];
     if (!flow) return;
     const newStatus = flow.next;
-<<<<<<< HEAD
-
-    setStatusUpdating(ride._id);
-    try {
-      const res = await fetch(`/api/rides/${ride._id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-=======
     setStatusUpdating(ride._id);
     try {
       const res = await fetch(`/api/rides/${ride._id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
->>>>>>> eabe9ef568161056c02fa8517def6f4ff7d36ed7
         body: JSON.stringify({ status: newStatus }),
       });
       const data = await res.json();
       if (data.success) {
-<<<<<<< HEAD
-        // Update local state
-        setRides((prev) => prev.map((r) => r._id === ride._id ? { ...r, status: newStatus } : r));
-        // Broadcast via Socket.io
-        socketRef.current?.emit('ride-status-update', {
-=======
         setRides((prev) =>
           prev.map((r) =>
             r._id === ride._id ? { ...r, status: newStatus } : r,
           ),
         );
         socketRef.current?.emit("ride-status-update", {
->>>>>>> eabe9ef568161056c02fa8517def6f4ff7d36ed7
           rideId: ride._id,
           status: newStatus,
           origin: ride.origin,
           destination: ride.destination,
         });
         setMessage(`Ride status updated to "${STATUS_LABELS[newStatus]}"`);
-<<<<<<< HEAD
-        setTimeout(() => setMessage(''), 3000);
-=======
         setTimeout(() => setMessage(""), 3000);
 
         // Start auto-progress if starting the ride
         if (newStatus === "active") {
           startAutoProgress(ride._id);
         }
->>>>>>> eabe9ef568161056c02fa8517def6f4ff7d36ed7
       } else {
         setMessage(`Error: ${data.error}`);
       }
@@ -342,20 +227,6 @@ export default function DashboardPage() {
     }
   };
 
-<<<<<<< HEAD
-  const handleCancelRide = async (id) => {
-    if (!confirm('Cancel this ride?')) return;
-    try {
-      const res = await fetch(`/api/rides/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'cancelled' }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setRides((prev) => prev.map((r) => r._id === id ? { ...r, status: 'cancelled' } : r));
-        socketRef.current?.emit('ride-status-update', { rideId: id, status: 'cancelled' });
-=======
   const startAutoProgress = (rideId) => {
     // Clear any existing timer for this ride
     if (autoProgressTimers[rideId]) {
@@ -438,7 +309,6 @@ export default function DashboardPage() {
             return newTimers;
           });
         }
->>>>>>> eabe9ef568161056c02fa8517def6f4ff7d36ed7
       }
     } catch {}
   };
@@ -447,14 +317,6 @@ export default function DashboardPage() {
     const [startTime, endTime] = ride.time.split(" - ");
     setEditingId(ride._id);
     setEditFormData({
-<<<<<<< HEAD
-      origin: ride.origin, destination: ride.destination,
-      date: ride.date.split('T')[0], availableSeats: ride.seats.toString(),
-      startTime, endTime, vehicleType: ride.vehicleType,
-      vehicleNumber: ride.vehicleNumber, driverName: ride.driverName,
-      driverPhone: ride.driverPhone, fare: ride.fare.toString(),
-      description: ride.description, status: ride.status,
-=======
       origin: ride.origin,
       destination: ride.destination,
       date: ride.date.split("T")[0],
@@ -468,7 +330,6 @@ export default function DashboardPage() {
       fare: ride.fare.toString(),
       description: ride.description,
       status: ride.status,
->>>>>>> eabe9ef568161056c02fa8517def6f4ff7d36ed7
     });
   };
 
@@ -494,27 +355,6 @@ export default function DashboardPage() {
         status: editFormData.status,
       };
       const res = await fetch(`/api/rides/${id}`, {
-<<<<<<< HEAD
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updateData),
-      });
-      const data = await res.json();
-      if (data.success) { setMessage('Ride updated!'); setEditingId(null); fetchRides(); }
-      else setMessage(`Error: ${data.error}`);
-    } catch (err) { setMessage(`Error: ${err.message}`); }
-  };
-
-  const handleDeleteRide = async (id) => {
-    if (!confirm('Delete this ride?')) return;
-    try {
-      const res = await fetch(`/api/rides/${id}`, { method: 'DELETE' });
-      const data = await res.json();
-      if (data.success) { setMessage('Ride deleted!'); fetchRides(); }
-      else setMessage(`Error: ${data.error}`);
-    } catch (err) { setMessage(`Error: ${err.message}`); }
-<<<<<<< HEAD
-=======
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updateData),
@@ -533,7 +373,7 @@ export default function DashboardPage() {
   const handleDeleteRide = async (id) => {
     if (!confirm("Delete this ride?")) return;
     try {
-      const res = await fetch(`/api/rides/${id}?t=${Date.now()}`, {
+      const res = await fetch(`/api/rides/${id}`, {
         method: "DELETE",
       });
       const data = await res.json();
@@ -544,16 +384,10 @@ export default function DashboardPage() {
     } catch (err) {
       setMessage(`Error: ${err.message}`);
     }
->>>>>>> eabe9ef568161056c02fa8517def6f4ff7d36ed7
-=======
->>>>>>> 62b307b280f9c4cf930c968df62c234333feaf0e
   };
 
   const handleCancel = () => {
     setEditingId(null);
-<<<<<<< HEAD
-    setEditFormData({ origin:'',destination:'',date:'',availableSeats:'',startTime:'',endTime:'',vehicleType:'',vehicleNumber:'',driverName:'',driverPhone:'',fare:'',description:'',status:'' });
-=======
     setEditFormData({
       origin: "",
       destination: "",
@@ -569,7 +403,6 @@ export default function DashboardPage() {
       description: "",
       status: "",
     });
->>>>>>> eabe9ef568161056c02fa8517def6f4ff7d36ed7
   };
 
   const handleViewDocs = async (ride) => {
@@ -630,236 +463,11 @@ export default function DashboardPage() {
       setMessage(`Error submitting rating: ${error.message}`);
     }
   };
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Header />
       <div className="flex-1 flex flex-col items-center p-4">
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 62b307b280f9c4cf930c968df62c234333feaf0e
-        <div className="w-full max-w-5xl bg-white shadow-lg rounded-xl overflow-hidden">
-          {/* Header */}
-          <div className="bg-green-600 text-white py-4 px-6 flex items-center justify-between">
-            <h1 className="text-2xl font-bold">GoRide Dashboard</h1>
-            <a href="/DriverDocs" className="text-sm bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg transition font-medium">
-              📋 Driver Docs
-            </a>
-          </div>
-
-          <div className="p-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">My Rides</h2>
-
-            {/* Filter */}
-            <div className="mb-4 flex flex-wrap items-center gap-2">
-              <button onClick={() => setShowFilterModal(true)} className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm">
-                Filter Preferences
-              </button>
-              {filterPrefs.length > 0 && (
-                <>
-                  <div className="flex flex-wrap gap-2">
-                    {filterPrefs.map((name) => {
-                      const opt = nameToOption[name];
-                      if (!opt) return null;
-                      const colorMap = { pink:'bg-pink-100 text-pink-800',gray:'bg-gray-100 text-gray-800',blue:'bg-blue-100 text-blue-800',purple:'bg-purple-100 text-purple-800',yellow:'bg-yellow-100 text-yellow-800',orange:'bg-orange-100 text-orange-800',cyan:'bg-cyan-100 text-cyan-800',green:'bg-green-100 text-green-800' };
-                      return <span key={name} className={`${colorMap[opt.color]||colorMap.gray} px-2 py-1 text-xs rounded-full`}>{opt.label}</span>;
-                    })}
-                  </div>
-                  <button onClick={() => setFilterPrefs([])} className="text-sm text-red-600 hover:underline">Clear</button>
-                </>
-              )}
-            </div>
-
-            {/* Message */}
-            {message && (
-              <div className={`mb-4 p-3 rounded-lg text-sm ${message.includes('Error') ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
-                {message}
-              </div>
-            )}
-
-            {/* Status Legend */}
-            <div className="mb-4 p-3 bg-blue-50 border border-blue-100 rounded-lg">
-              <p className="text-xs font-semibold text-blue-700 mb-2">🚦 Ride Status Flow (Automation)</p>
-              <div className="flex flex-wrap gap-2 text-xs">
-                {['waiting','active','en-route','arrived','completed'].map((s,i,arr) => (
-                  <React.Fragment key={s}>
-                    <span className={`px-2 py-0.5 rounded-full font-medium ${STATUS_BADGE[s]}`}>{STATUS_LABELS[s]}</span>
-                    {i < arr.length - 1 && <span className="text-gray-400 self-center">→</span>}
-                  </React.Fragment>
-                ))}
-              </div>
-            </div>
-
-            {/* Rides */}
-            {loading ? (
-              <div className="text-center py-8 text-gray-600">Loading rides...</div>
-            ) : rides.length === 0 ? (
-              <div className="text-center py-8 text-gray-600">No rides yet. Start by offering a ride!</div>
-            ) : ridesToShow.length === 0 ? (
-              <div className="text-center py-8 text-gray-600">No rides match the selected preferences.</div>
-            ) : (
-              <div className="space-y-4">
-                {ridesToShow.map((ride) => (
-                  <div key={ride._id} className="border border-gray-200 rounded-xl p-4 bg-gray-50 hover:bg-white transition shadow-xs">
-                    {editingId === ride._id ? (
-                      /* Edit Form */
-                      <div className="space-y-4">
-                        <h3 className="text-lg font-semibold text-gray-800">Edit Ride</h3>
-                        <div className="grid grid-cols-2 gap-4">
-                          {[['origin','Origin','text'],['destination','Destination','text']].map(([n,l,t]) => (
-                            <div key={n}>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">{l}</label>
-                              <input type={t} name={n} value={editFormData[n]} onChange={handleEditInputChange}
-                                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900" />
-                            </div>
-                          ))}
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
-                            <input type="date" name="date" value={editFormData.date} onChange={handleEditInputChange}
-                              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900" />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Seats</label>
-                            <input type="number" name="availableSeats" value={editFormData.availableSeats} onChange={handleEditInputChange}
-                              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900" />
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Vehicle Type</label>
-                            <select name="vehicleType" value={editFormData.vehicleType} onChange={handleEditInputChange}
-                              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900 bg-white">
-                              <option value="">Select</option>
-                              <option>Car</option><option>Micro</option><option>Bike</option>
-                            </select>
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Vehicle Number</label>
-                            <input type="text" name="vehicleNumber" value={editFormData.vehicleNumber} onChange={handleEditInputChange}
-                              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900" />
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Driver Name</label>
-                            <input type="text" name="driverName" value={editFormData.driverName} onChange={handleEditInputChange}
-                              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900" />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Driver Phone</label>
-                            <input type="tel" name="driverPhone" value={editFormData.driverPhone} onChange={handleEditInputChange}
-                              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900" />
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Fare (৳)</label>
-                            <input type="number" name="fare" value={editFormData.fare} onChange={handleEditInputChange}
-                              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900" />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                            <select name="status" value={editFormData.status} onChange={handleEditInputChange}
-                              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900 bg-white">
-                              <option value="waiting">Waiting</option>
-                              <option value="active">Active</option>
-                              <option value="en-route">En Route</option>
-                              <option value="arrived">Arrived</option>
-                              <option value="completed">Completed</option>
-                              <option value="cancelled">Cancelled</option>
-                            </select>
-                          </div>
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                          <textarea name="description" value={editFormData.description} onChange={handleEditInputChange} rows={2}
-                            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900" />
-                        </div>
-                        <div className="flex gap-3">
-                          <button onClick={() => handleUpdateRide(ride._id)} className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition">Save</button>
-                          <button onClick={handleCancel} className="bg-gray-400 hover:bg-gray-500 text-white font-medium py-2 px-4 rounded-lg transition">Cancel</button>
-                        </div>
-                      </div>
-                    ) : (
-                      /* Ride Card */
-                      <div>
-                        <div className="flex justify-between items-start mb-3">
-                          <div>
-                            <h3 className="text-lg font-semibold text-gray-800">
-                              {ride.origin} → {ride.destination}
-                            </h3>
-                            <p className="text-sm text-gray-500">{new Date(ride.date).toLocaleDateString()} · {ride.time}</p>
-                          </div>
-                          <span className={`px-3 py-1 rounded-full text-sm font-semibold ${STATUS_BADGE[ride.status] || 'bg-gray-100 text-gray-700'}`}>
-                            {STATUS_LABELS[ride.status] || ride.status}
-                          </span>
-                        </div>
-
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4 text-sm">
-                          <div><p className="text-gray-500">Seats</p><p className="font-semibold text-gray-800">{ride.seats}</p></div>
-                          <div><p className="text-gray-500">Vehicle</p><p className="font-semibold text-gray-800">{ride.vehicleType}</p></div>
-                          <div><p className="text-gray-500">Vehicle #</p><p className="font-semibold text-gray-800">{ride.vehicleNumber}</p></div>
-                          <div><p className="text-gray-500">Fare</p><p className="font-semibold text-gray-800">{ride.fare ? `৳${ride.fare}` : 'TBD'}</p></div>
-                        </div>
-
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4 text-sm">
-                          <div><p className="text-gray-500">Driver</p><p className="font-semibold text-gray-800">{ride.driverName}</p></div>
-                          <div><p className="text-gray-500">Phone</p><p className="font-semibold text-gray-800">{ride.driverPhone}</p></div>
-                          {ride.description && <div><p className="text-gray-500">Note</p><p className="font-semibold text-gray-800">{ride.description}</p></div>}
-                        </div>
-
-                        {/* Status Automation Buttons */}
-                        <div className="flex flex-wrap gap-2 mb-3">
-                          {STATUS_FLOW[ride.status] && (
-                            <button
-                              onClick={() => handleStatusAdvance(ride)}
-                              disabled={statusUpdating === ride._id}
-                              className={`${STATUS_FLOW[ride.status].color} text-white font-medium py-2 px-4 rounded-lg transition text-sm disabled:opacity-50`}
-                            >
-                              {statusUpdating === ride._id ? 'Updating...' : STATUS_FLOW[ride.status].label}
-                            </button>
-                          )}
-                          {ride.status !== 'cancelled' && ride.status !== 'completed' && (
-                            <button
-                              onClick={() => handleCancelRide(ride._id)}
-                              className="bg-red-100 hover:bg-red-200 text-red-700 font-medium py-2 px-4 rounded-lg transition text-sm"
-                            >
-                              ✕ Cancel Ride
-                            </button>
-                          )}
-                        </div>
-
-                        {/* Edit / Delete */}
-                        <div className="flex gap-2 border-t border-gray-100 pt-3">
-                          <button onClick={() => handleEditClick(ride)}
-                            className="text-sm bg-blue-600 hover:bg-blue-700 text-white font-medium py-1.5 px-3 rounded-lg transition">
-                            Edit
-                          </button>
-                          <button onClick={() => handleDeleteRide(ride._id)}
-                            className="text-sm bg-red-600 hover:bg-red-700 text-white font-medium py-1.5 px-3 rounded-lg transition">
-                            Delete
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <PreferencesModal show={showFilterModal} onClose={() => setShowFilterModal(false)} selectedPrefs={filterPrefs} togglePreference={toggleFilterPref} />
-
-          <div className="border-t border-gray-200 bg-gray-50 py-3 px-6">
-            <div className="flex justify-center space-x-8 text-gray-700 font-medium text-sm">
-              <a href="/" className="cursor-pointer hover:text-green-600">Home</a>
-              <a href="/OfferRide" className="cursor-pointer hover:text-green-600">Offer Ride</a>
-              <a href="/DriverDocs" className="cursor-pointer hover:text-green-600">Driver Docs</a>
-            </div>
-<<<<<<< HEAD
-=======
         {/* Main card */}
         <div className="w-full max-w-5xl bg-white shadow-lg rounded-xl overflow-hidden">
           {/* Header */}
@@ -1493,71 +1101,6 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* Driver Docs Modal */}
-          {viewingDocs && docsData && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-              <div className="bg-white rounded-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-                <div className="p-6">
-                  <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-xl font-bold text-gray-800">
-                      Driver Documents
-                    </h2>
-                    <button
-                      onClick={handleCloseDocs}
-                      className="text-gray-400 hover:text-gray-600 text-2xl"
-                    >
-                      &times;
-                    </button>
-                  </div>
-                  <div className="space-y-4">
-                    <div>
-                      <strong>Name:</strong> {docsData.driverName}
-                    </div>
-                    <div>
-                      <strong>Email:</strong> {docsData.email}
-                    </div>
-                    <div>
-                      <strong>Phone:</strong> {docsData.phone}
-                    </div>
-                    <div>
-                      <strong>Vehicle:</strong> {docsData.vehicleType} -{" "}
-                      {docsData.vehicleNumber}
-                    </div>
-                    <div>
-                      <strong>Status:</strong>{" "}
-                      <span className="text-green-600 font-semibold">
-                        {docsData.status}
-                      </span>
-                    </div>
-                    {docsData.notes && (
-                      <div>
-                        <strong>Notes:</strong> {docsData.notes}
-                      </div>
-                    )}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                      <div>
-                        <strong>License:</strong>
-                        <img
-                          src={`/api/driver-docs/file/${docsData.licenseFileName}`}
-                          alt="License"
-                          className="mt-2 max-w-full h-auto border rounded"
-                        />
-                      </div>
-                      <div>
-                        <strong>Registration:</strong>
-                        <img
-                          src={`/api/driver-docs/file/${docsData.registrationFileName}`}
-                          alt="Registration"
-                          className="mt-2 max-w-full h-auto border rounded"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
           {/* Rating Modal */}
           {showRatingModal && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -1639,9 +1182,6 @@ export default function DashboardPage() {
                 Driver Docs
               </a>
             </div>
->>>>>>> eabe9ef568161056c02fa8517def6f4ff7d36ed7
-=======
->>>>>>> 62b307b280f9c4cf930c968df62c234333feaf0e
           </div>
         </div>
       </div>
