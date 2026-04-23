@@ -59,11 +59,78 @@ const rideSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
+    distanceKm: {
+      type: Number,
+    },
+    duration: {
+      type: String,
+    },
+    creator: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: false, // Make it optional for backwards compatibility
+    },
+    driverId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: false,
+    },
+    riderId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: false,
+    },
+    passengers: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    }],
+    department: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    buildingName: {
+      type: String,
+      trim: true,
+      default: '',
+    },
     status: {
       type: String,
       // waiting → active → en-route → arrived → completed
       enum: ['waiting', 'active', 'en-route', 'arrived', 'completed', 'cancelled'],
       default: 'active',
+    },
+    riderRating: {
+      type: Number,
+      min: 1,
+      max: 5,
+    },
+    riderReview: {
+      type: String,
+      trim: true,
+    },
+    driverRating: {
+      type: Number,
+      min: 1,
+      max: 5,
+    },
+    driverReview: {
+      type: String,
+      trim: true,
+    },
+    rating: {
+      type: Number,
+      min: 1,
+      max: 5,
+    },
+    review: {
+      type: String,
+      trim: true,
+    },
+    trustScore: {
+      type: Number,
+      min: 0,
+      max: 5,
     },
   },
   {

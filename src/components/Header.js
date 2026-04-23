@@ -1,7 +1,12 @@
-'use client';
+"use client";
 
+<<<<<<< HEAD
 import React, { useState } from 'react';
 import Link from 'next/link';
+=======
+import React, { useState } from "react";
+import Link from "next/link";
+>>>>>>> eabe9ef568161056c02fa8517def6f4ff7d36ed7
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -20,9 +25,21 @@ export default function Header() {
 
         {/* Nav Links */}
         <div className="hidden md:flex space-x-6 text-gray-700 font-medium">
+<<<<<<< HEAD
           <Link href="/" className="hover:text-green-600 transition">Home</Link>
           <Link href="/Dashboard" className="hover:text-green-600 transition">Dashboard</Link>
           <Link href="/DriverDocs" className="hover:text-green-600 transition">Driver Docs</Link>
+=======
+          <Link href="/" className="hover:text-green-600 transition">
+            Home
+          </Link>
+          <Link href="/Dashboard" className="hover:text-green-600 transition">
+            Dashboard
+          </Link>
+          <Link href="/DriverDocs" className="hover:text-green-600 transition">
+            Driver Docs
+          </Link>
+>>>>>>> eabe9ef568161056c02fa8517def6f4ff7d36ed7
         </div>
 
         {/* Action Buttons */}
@@ -42,6 +59,15 @@ export default function Header() {
           <Link href="/DriverDocs">
             <button className="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-lg transition text-sm hidden sm:block">
               Driver Docs
+<<<<<<< HEAD
+            </button>
+          </Link>
+
+          <Link href="/ClassSchedule">
+            <button className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition text-sm hidden sm:block">
+              Schedule
+=======
+>>>>>>> eabe9ef568161056c02fa8517def6f4ff7d36ed7
             </button>
           </Link>
 
@@ -51,9 +77,24 @@ export default function Header() {
             </button>
           </Link>
 
+          <button
+            onClick={() =>
+              window.dispatchEvent(new CustomEvent("open-global-chat"))
+            }
+            className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-lg transition text-sm"
+          >
+            💬 Chat
+          </button>
+
           <Link href="/Dashboard">
             <button className="border-2 border-green-600 text-green-600 hover:bg-green-50 font-medium py-2 px-4 rounded-lg transition text-sm">
               Dashboard
+            </button>
+          </Link>
+
+          <Link href="/emergency">
+            <button className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition">
+              SOS Support
             </button>
           </Link>
         </div>
