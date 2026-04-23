@@ -1,49 +1,21 @@
-<<<<<<< HEAD
-'use client';
-
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { io } from 'socket.io-client';
-=======
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { io } from "socket.io-client";
->>>>>>> eabe9ef568161056c02fa8517def6f4ff7d36ed7
 
 let socketInstance = null;
 
 function getSocket() {
   if (!socketInstance) {
-<<<<<<< HEAD
-    socketInstance = io({ path: '/socket.io', transports: ['websocket', 'polling'] });
-=======
     socketInstance = io({
       path: "/socket.io",
       transports: ["websocket", "polling"],
     });
->>>>>>> eabe9ef568161056c02fa8517def6f4ff7d36ed7
   }
   return socketInstance;
 }
 
 const STATUS_LABELS = {
-<<<<<<< HEAD
-  active: 'Active',
-  waiting: 'Waiting',
-  'en-route': 'En Route',
-  arrived: 'Arrived',
-  completed: 'Completed',
-  cancelled: 'Cancelled',
-};
-
-const STATUS_COLORS = {
-  active: 'bg-green-100 text-green-700',
-  waiting: 'bg-yellow-100 text-yellow-700',
-  'en-route': 'bg-blue-100 text-blue-700',
-  arrived: 'bg-purple-100 text-purple-700',
-  completed: 'bg-gray-100 text-gray-600',
-  cancelled: 'bg-red-100 text-red-700',
-=======
   active: "Active",
   waiting: "Waiting",
   "en-route": "En Route",
@@ -59,7 +31,7 @@ const STATUS_COLORS = {
   arrived: "bg-purple-100 text-purple-700",
   completed: "bg-gray-100 text-gray-600",
   cancelled: "bg-red-100 text-red-700",
->>>>>>> eabe9ef568161056c02fa8517def6f4ff7d36ed7
+};
 };
 
 export default function ChatPopup() {

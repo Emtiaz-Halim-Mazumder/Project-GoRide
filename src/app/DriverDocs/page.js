@@ -1,11 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-<<<<<<< HEAD
-import Header from '@/Components/Header';
-=======
 import Header from '@/components/Header';
->>>>>>> eabe9ef568161056c02fa8517def6f4ff7d36ed7
 import Link from 'next/link';
 
 export default function DriverDocsPage() {
